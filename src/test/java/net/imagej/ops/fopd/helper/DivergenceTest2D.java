@@ -8,7 +8,9 @@ import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.DualVariables;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
 import net.imglib2.type.numeric.real.DoubleType;
 
 /**
@@ -19,15 +21,17 @@ import net.imglib2.type.numeric.real.DoubleType;
  */
 public class DivergenceTest2D extends AbstractOpTest {
 
-	private static double[] expected = new double[] { 0.0, 2.0, -1.0, 0.0, -2.0, 0.0, 0.0, 3.0, -1.0 };
+	private static double[] expected = new double[] { -1.0, 3.0, -1.0, 0.0, -2.0, 0.0, -1.0, 3.0, -1.0 };
 
 	@Test
 	public void divergenceTest() {
 
 		@SuppressWarnings("unchecked")
-		final Img<DoubleType> gradientX = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 0));
+		final Img<DoubleType> gradientX = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 0,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()));
 		@SuppressWarnings("unchecked")
-		final Img<DoubleType> gradientY = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 1));
+		final Img<DoubleType> gradientY = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 1,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()));
 
 		@SuppressWarnings("unchecked")
 		DualVariables<DoubleType> d = new DualVariables<DoubleType>(gradientX, gradientY);
@@ -36,7 +40,7 @@ public class DivergenceTest2D extends AbstractOpTest {
 		final Cursor<DoubleType> c = ((IterableInterval<DoubleType>) ops.run(DefaultDivergence2D.class, d)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			 assertEquals("Divergence differs", expected[i++], c.next().get(), 0);
+			assertEquals("Divergence differs", expected[i++], c.next().get(), 0);
 		}
 	}
 
