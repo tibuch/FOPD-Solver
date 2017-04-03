@@ -2,14 +2,14 @@ package net.imagej.ops.fopd.costfunction;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.DualVariables;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.DoubleType;
+
+import org.junit.Test;
 
 /**
  * 

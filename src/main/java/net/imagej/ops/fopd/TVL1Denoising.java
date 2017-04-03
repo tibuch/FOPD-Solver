@@ -90,6 +90,7 @@ public class TVL1Denoising<T extends RealType<T>>
 			descentTV.compute(p, u);
 			descentL1Denoising.compute(q, u);
 
+			inplaceMapper.mutate((IterableInterval<T>) u);
 			// mapperSubtract.compute(2*u, uq, uq) does not work, because wrong
 			// map is chosen later on.
 			mapperSubtract.compute(Converters.convert(u, new Converter<T, T>() {
@@ -101,7 +102,6 @@ public class TVL1Denoising<T extends RealType<T>>
 			}, p.getType()), (IterableInterval<T>) uq, tmp);
 
 			copyComputer.compute(tmp, uq);
-			inplaceMapper.mutate((IterableInterval<T>) uq);
 		}
 	}
 

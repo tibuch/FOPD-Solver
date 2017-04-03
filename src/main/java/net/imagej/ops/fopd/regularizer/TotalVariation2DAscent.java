@@ -22,7 +22,11 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.outofbounds.OutOfBoundsBorder;
+import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
+import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -103,9 +107,11 @@ public class TotalVariation2DAscent<T extends RealType<T>>
 	private void init(final DualVariables<T> input) {
 		norm = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
 		gradientX = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 0);
+				RandomAccessibleInterval.class, 0,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
 		gradientY = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 1);
+				RandomAccessibleInterval.class, 1,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
 
 		final BinaryComputerOp<T, T, T> addComputer = Computers.binary(ops, Ops.Math.Add.class, input.getType(), input.getType(), input.getType());
 

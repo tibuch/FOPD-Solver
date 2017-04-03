@@ -2,14 +2,14 @@ package net.imagej.ops.fopd.regularizer;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.DualVariables;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.DoubleType;
+
+import org.junit.Test;
 
 /**
  * 
@@ -18,8 +18,8 @@ import net.imglib2.type.numeric.real.DoubleType;
  */
 public class TotalVariationTest extends AbstractOpTest {
 
-	private static double[] expected = new double[] { 0.0, 0.04267766952966369, -0.017677669529663688, 0.0,
-			-0.04267766952966369, 0.0, 0.0, 0.07500000000000001, -0.025 };
+	private static double[] expected = new double[] { -0.025, 0.06035533905932738, -0.017677669529663688, 0.0,
+			-0.04267766952966369, 0.0, -0.025, 0.07500000000000001, -0.025 };
 
 	@SuppressWarnings("unchecked")
 	@Test

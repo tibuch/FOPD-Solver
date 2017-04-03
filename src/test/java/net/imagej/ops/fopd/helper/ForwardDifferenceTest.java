@@ -6,7 +6,9 @@ import org.junit.Test;
 
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
 import net.imglib2.type.numeric.real.DoubleType;
 
 /**
@@ -25,7 +27,8 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 	public void forwardDifferenceXTest() {
 
 		@SuppressWarnings("unchecked")
-		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 0)).cursor();
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 0,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>())).cursor();
 		int i = 0;
 		while (c.hasNext()) {
 			assertEquals("GradientX differs", forwardDifferenceX[i++], c.next().get(), 0);
@@ -36,10 +39,11 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 	public void forwardDifferenceYTest() {
 
 		@SuppressWarnings("unchecked")
-		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 1)).cursor();
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 1,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>())).cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			 assertEquals("GradientY differs", forwardDifferenceY[i++], c.next().get(), 0);
+			assertEquals("GradientY differs", forwardDifferenceY[i++], c.next().get(), 0);
 		}
 	}
 }

@@ -12,6 +12,7 @@ import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
 import net.imglib2.type.numeric.RealType;
 
 /**
@@ -48,16 +49,18 @@ public class DefaultDivergence2D<T extends RealType<T>>
 	@SuppressWarnings("unchecked")
 	public void compute(DualVariables<T> input, RandomAccessibleInterval<T> output) {
 		if (bdComputerX == null || bdComputerY == null) {
-			init2();
+			init2(input);
 		}
 		add2(bdComputerX.calculate(input.getDualVariable(0)), bdComputerY.calculate(input.getDualVariable(1)), output);
 	}
 
-	private void init2() {
+	private void init2(final DualVariables<T> input) {
 		bdComputerX = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 0);
+				RandomAccessibleInterval.class, 0,
+				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(input.getType().createVariable()));
 		bdComputerY = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 1);
+				RandomAccessibleInterval.class, 1,
+				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(input.getType().createVariable()));
 	}
 
 	private void add2(final RandomAccessible<T> source0, final RandomAccessible<T> source1,
