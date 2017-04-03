@@ -10,6 +10,7 @@ import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.outofbounds.OutOfBoundsFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -28,6 +29,9 @@ public class DefaultForwardDifference<T extends RealType<T>>
 
 	@Parameter
 	private int d;
+	
+	@Parameter
+	private OutOfBoundsFactory<T, RandomAccessibleInterval<T>> fac;
 
 	@Parameter
 	private OpService ops;
@@ -46,7 +50,7 @@ public class DefaultForwardDifference<T extends RealType<T>>
 		}
 		
 		gradientForwardDifference(
-				(RandomAccessible<T>) Views.interval(Views.extendBorder(input), interval), output,
+				Views.interval(Views.extend(input, fac), interval), output,
 				d);
 
 	}
