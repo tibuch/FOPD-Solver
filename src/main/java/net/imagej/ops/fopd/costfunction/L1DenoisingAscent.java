@@ -1,8 +1,5 @@
 package net.imagej.ops.fopd.costfunction;
 
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
@@ -22,6 +19,16 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+
+/**
+ * L1-Denoising of one 2D image: {@link Ascent} Step.
+ * 
+ * @author Tim-Oliver Buchholz, University of Konstanz
+ *
+ * @param <T>
+ */
 @Plugin(type = Ascent.class)
 public class L1DenoisingAscent<T extends RealType<T>>
 		extends AbstractUnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> implements Ascent<T> {
