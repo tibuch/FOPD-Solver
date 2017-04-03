@@ -22,15 +22,20 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.outofbounds.OutOfBoundsBorder;
 import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
-import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+/**
+ * Total Variation of one 2D image: {@link Ascent} Step.
+ * 
+ * @author Tim-Oliver Buchholz, University of Konstanz
+ *
+ * @param <T>
+ */
 @Plugin(type = Ascent.class)
 public class TotalVariation2DAscent<T extends RealType<T>>
 		extends AbstractUnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> implements Ascent<T> {

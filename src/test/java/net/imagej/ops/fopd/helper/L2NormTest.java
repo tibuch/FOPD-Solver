@@ -46,6 +46,7 @@ public class L2NormTest extends AbstractOpTest {
 
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void L2Norm2DTest() {
 		final UnaryComputerOp<DualVariables, RandomAccessibleInterval> normComputer = Computers.unary(ops,
