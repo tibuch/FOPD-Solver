@@ -17,6 +17,8 @@ import net.imglib2.type.numeric.real.DoubleType;
 public class SolverTest extends AbstractOpTest {
 
 	final static double[] expectedTVL1 = new double[] { 1.0, 0.7871691057882889, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, };
+	
+	final static double[] expectedTVHuberL1 = new double[] { 1.0, 0.7835696455044173, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, };
 
 	@Test
 	public void TVL1DenoisingTest() {
@@ -28,6 +30,19 @@ public class SolverTest extends AbstractOpTest {
 			c.next();
 			assertEquals("Pixel at [" + c.getDoublePosition(0) + "," + c.getDoublePosition(1) + "] differs.",
 					expectedTVL1[i++], c.get().get(), 0);
+		}
+	}
+	
+	@Test
+	public void TVHuberL1DenoisingTest() {
+
+		@SuppressWarnings("unchecked")
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(TVHuberL1Denoising.class, img, 0.5, 0.05, 10)).cursor();
+		int i = 0;
+		while (c.hasNext()) {
+			c.next();
+			assertEquals("Pixel at [" + c.getDoublePosition(0) + "," + c.getDoublePosition(1) + "] differs.",
+					expectedTVHuberL1[i++], c.get().get(), 0);
 		}
 	}
 }
