@@ -37,6 +37,8 @@ public class L1DenoisingDescent<T extends RealType<T>>
 
 	private RAIAndRAIToIIParallel<T, T, T> mapperSubtract;
 
+	private Converter<T, T> converter;
+
 	@SuppressWarnings("unchecked")
 	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
 		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
@@ -49,12 +51,8 @@ public class L1DenoisingDescent<T extends RealType<T>>
 			init(input);
 		}
 
-		mapperSubtract.compute(output, Converters.convert(input.getDualVariable(0), new Converter<T, T>() {
-
-			public void convert(T input, T output) {
-				output.setReal(input.getRealDouble() * stepSize);
-			}
-		}, input.getType()), (IterableInterval<T>) output);
+		mapperSubtract.compute(output, Converters.convert(input.getDualVariable(0), converter, input.getType()),
+				(IterableInterval<T>) output);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -64,6 +62,13 @@ public class L1DenoisingDescent<T extends RealType<T>>
 		mapperSubtract = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
 				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
 		mapperSubtract.setOp(subtractComputer);
+
+		converter = new Converter<T, T>() {
+
+			public void convert(T input, T output) {
+				output.setReal(input.getRealDouble() * stepSize);
+			}
+		};
 	}
 
 }

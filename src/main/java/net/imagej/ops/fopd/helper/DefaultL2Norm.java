@@ -1,8 +1,5 @@
 package net.imagej.ops.fopd.helper;
 
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops.Stats.Sum;
 import net.imagej.ops.fopd.DualVariables;
@@ -20,6 +17,9 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+
 /**
  * Implementation of {@link L2Norm}.
  * 
@@ -35,6 +35,10 @@ public class DefaultL2Norm<T extends RealType<T>>
 	private OpService ops;
 
 	private DefaultProjectParallel<T, T> projector;
+
+	private Converter<T, T> squareConverter;
+
+	private Converter<T, T> sqrtConverter;
 
 	@SuppressWarnings("unchecked")
 	public RandomAccessibleInterval<T> createOutput(final DualVariables<T> input) {
@@ -63,29 +67,33 @@ public class DefaultL2Norm<T extends RealType<T>>
 			init(stack, (IterableInterval<T>) output, input.getNumDualVariables() - 1);
 		}
 
-		projector.compute(Converters.convert(stack, new Converter<T, T>() {
+		projector.compute(Converters.convert(stack, squareConverter, input.getType()), (IterableInterval<T>) output);
 
-			public void convert(T input, T output) {
-				final double value = input.getRealDouble();
-				output.setReal(value * value);
-			}
-
-		}, input.getType()), (IterableInterval<T>) output);
-
-		Converters.convert(output, new Converter<T, T>() {
-
-			public void convert(T input, T output) {
-				final double value = input.getRealDouble();
-				output.setReal(Math.sqrt(value));
-			}
-
-		}, input.getType());
+		Converters.convert(output, sqrtConverter, input.getType());
 	}
 
 	@SuppressWarnings("unchecked")
 	private void init(final RandomAccessibleInterval<T> stack, final IterableInterval<T> output, final int d) {
 		projector = ops.op(DefaultProjectParallel.class, IterableInterval.class, RandomAccessibleInterval.class,
 				Computers.unary(ops, Sum.class, DoubleType.class, RandomAccessibleInterval.class), d);
+
+		squareConverter = new Converter<T, T>() {
+
+			public void convert(T input, T output) {
+				final double value = input.getRealDouble();
+				output.setReal(value * value);
+			}
+
+		};
+
+		sqrtConverter = new Converter<T, T>() {
+
+			public void convert(T input, T output) {
+				final double value = input.getRealDouble();
+				output.setReal(Math.sqrt(value));
+			}
+
+		};
 	}
 
 	private void norm1D(final RandomAccessible<T> source0, final RandomAccessibleInterval<T> norm) {

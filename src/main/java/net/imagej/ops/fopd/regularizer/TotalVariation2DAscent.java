@@ -75,6 +75,10 @@ public class TotalVariation2DAscent<T extends RealType<T>>
 
 	private UnaryComputerOp<DualVariables, RandomAccessibleInterval> normComputer;
 
+	private Converter<T, T> c1;
+
+	private Converter<T, T> c2;
+
 	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
 		
 		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
@@ -88,20 +92,10 @@ public class TotalVariation2DAscent<T extends RealType<T>>
 		}
 
 		mapper.compute(input.getDualVariable(0), (RandomAccessibleInterval<T>) Converters
-				.convert(gradientX.calculate(output), new Converter<T, T>() {
-
-					public void convert(T in, T out) {
-						out.setReal(in.getRealDouble() * stepSize);
-					}
-				}, input.getType()), (IterableInterval<T>) input.getDualVariable(0));
+				.convert(gradientX.calculate(output), c1, input.getType()), (IterableInterval<T>) input.getDualVariable(0));
 
 		mapper.compute(input.getDualVariable(1), (RandomAccessibleInterval<T>) Converters
-				.convert(gradientY.calculate(output), new Converter<T, T>() {
-
-					public void convert(T in, T out) {
-						out.setReal(in.getRealDouble() * stepSize);
-					}
-				}, input.getType()), (IterableInterval<T>) input.getDualVariable(1));
+				.convert(gradientY.calculate(output), c2, input.getType()), (IterableInterval<T>) input.getDualVariable(1));
 
 		normComputer.compute(input, norm);
 		
@@ -118,6 +112,20 @@ public class TotalVariation2DAscent<T extends RealType<T>>
 				RandomAccessibleInterval.class, 1,
 				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
 
+		c1 = new Converter<T, T>() {
+
+			public void convert(T in, T out) {
+				out.setReal(in.getRealDouble() * stepSize);
+			}
+		};
+		
+		c2 = new Converter<T, T>() {
+
+			public void convert(T in, T out) {
+				out.setReal(in.getRealDouble() * stepSize);
+			}
+		};
+		
 		final BinaryComputerOp<T, T, T> addComputer = Computers.binary(ops, Ops.Math.Add.class, input.getType(), input.getType(), input.getType());
 
 		mapper = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,

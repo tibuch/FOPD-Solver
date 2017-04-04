@@ -61,6 +61,8 @@ public class DefaultSolver<T extends RealType<T>>
 	 */
 	private MapIIInplaceParallel<T> clipperMapper;
 
+	private Converter<T, T> converter;
+
 	@SuppressWarnings("unchecked")
 	public RandomAccessibleInterval<T> createOutput(SolverState<T> input) {
 		return (RandomAccessibleInterval<T>) ops.create().img(input.getImage());
@@ -88,13 +90,9 @@ public class DefaultSolver<T extends RealType<T>>
 			clipperMapper.mutate((IterableInterval<T>) input.getIntermediateResult());
 			// mapperSubtract.compute(2*u, uq, uq) does not work, because wrong
 			// map is chosen later on.
-			mapperSubtract.compute(Converters.convert(input.getIntermediateResult(), new Converter<T, T>() {
-
-				public void convert(T in, T output) {
-					output.setReal(in.getRealDouble() * 2.0);
-				}
-
-			}, input.getRegularizerDV().getType()), (IterableInterval<T>) result, tmp);
+			mapperSubtract.compute(
+					Converters.convert(input.getIntermediateResult(), converter, input.getRegularizerDV().getType()),
+					(IterableInterval<T>) result, tmp);
 
 			copyComputer.compute(tmp, result);
 		}
@@ -109,6 +107,14 @@ public class DefaultSolver<T extends RealType<T>>
 		mapperSubtract.setOp(Computers.binary(ops, Ops.Math.Subtract.class, type, type, type));
 
 		copyComputer = Computers.unary(ops, Ops.Copy.RAI.class, input.getImage(), output);
+
+		converter = new Converter<T, T>() {
+
+			public void convert(T in, T output) {
+				output.setReal(in.getRealDouble() * 2.0);
+			}
+
+		};
 
 		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class, IterableInterval.class, UnaryInplaceOp.class);
 		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops, Default01Clipper.class, type));

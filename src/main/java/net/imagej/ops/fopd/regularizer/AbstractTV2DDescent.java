@@ -45,6 +45,8 @@ public abstract class AbstractTV2DDescent<T extends RealType<T>>
 
 	private RAIAndRAIToIIParallel<T, T, T> mapper;
 
+	private Converter<T, T> converter;
+
 	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
 		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
 	}
@@ -55,18 +57,20 @@ public abstract class AbstractTV2DDescent<T extends RealType<T>>
 			init(input);
 		}
 
-		mapper.compute(output, Converters.convert(divComputer.calculate(input), new Converter<T, T>() {
-
-			public void convert(T input, T output) {
-				output.setReal(input.getRealDouble() * stepSize);
-			}
-		}, input.getType()), (IterableInterval<T>) output);
+		mapper.compute(output, Converters.convert(divComputer.calculate(input), converter, input.getType()),
+				(IterableInterval<T>) output);
 		;
 	}
 
 	private void init(final DualVariables<T> input) {
 		divComputer = Functions.unary(ops, DefaultDivergence2D.class, RandomAccessibleInterval.class,
 				DualVariables.class);
+		converter = new Converter<T, T>() {
+
+			public void convert(T input, T output) {
+				output.setReal(input.getRealDouble() * stepSize);
+			}
+		};
 		addComputer = Computers.binary(ops, Ops.Math.Add.class, input.getType(), input.getType(), input.getType());
 		mapper = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
 				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
