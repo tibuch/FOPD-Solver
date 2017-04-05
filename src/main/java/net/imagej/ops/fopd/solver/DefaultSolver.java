@@ -87,7 +87,6 @@ public class DefaultSolver<T extends RealType<T>>
 			regularizer.getDescent().compute(input.getRegularizerDV(), input.getIntermediateResult());
 			costfunction.getDescent().compute(input.getCostFunctionDV(), input.getIntermediateResult());
 
-			clipperMapper.mutate((IterableInterval<T>) input.getIntermediateResult());
 			// mapperSubtract.compute(2*u, uq, uq) does not work, because wrong
 			// map is chosen later on.
 			mapperSubtract.compute(
@@ -95,6 +94,7 @@ public class DefaultSolver<T extends RealType<T>>
 					(IterableInterval<T>) result, tmp);
 
 			copyComputer.compute(tmp, result);
+			clipperMapper.mutate((IterableInterval<T>) result);
 		}
 	}
 

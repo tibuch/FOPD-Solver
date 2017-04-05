@@ -2,15 +2,17 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
+import net.imagej.ops.fopd.costfunction.deconvolution.L1Deconvolution2D;
 import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.TotalVariation2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
-import net.imagej.ops.fopd.solver.TVL1DenoisingSolverState;
-import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
+import net.imagej.ops.fopd.solver.TVL1Deconvolution2DSolverState;
+import net.imagej.ops.special.hybrid.AbstractBinaryHybridCF;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -26,8 +28,8 @@ import org.scijava.plugin.Plugin;
  *
  */
 @Plugin(type = UnaryHybridCF.class)
-public class TVL1Denoising<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
+public class TVL1Deconvolution<T extends RealType<T>> extends
+		AbstractBinaryHybridCF<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
 
 	@Parameter
 	private OpService ops;
@@ -39,17 +41,21 @@ public class TVL1Denoising<T extends RealType<T>>
 	private int numIt;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(RandomAccessibleInterval<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input);
+	public RandomAccessibleInterval<T> createOutput(RandomAccessibleInterval<T> image,
+			RandomAccessibleInterval<T> kernel) {
+		return (RandomAccessibleInterval<T>) ops.create().img(image);
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	public void compute(RandomAccessibleInterval<T> input, RandomAccessibleInterval<T> uq) {
+	public void compute(RandomAccessibleInterval<T> image, RandomAccessibleInterval<T> kernel,
+			RandomAccessibleInterval<T> uq) {
 
-		final TotalVariation2D<T> tv = new TotalVariation2D<T>(ops, lambda, 0.25);
-		final L1Denoising2D<T> cf = new L1Denoising2D<T>(ops, input, 0.25);
+		final TotalVariation2D<T> tv = new TotalVariation2D<T>(ops, lambda, 0.2);
+		RandomAccessibleInterval<T> flippedKernel = ops.copy().rai(kernel);
+		final L1Deconvolution2D<T> cf = new L1Deconvolution2D<T>(ops, image, kernel, Views.invertAxis(Views.invertAxis(flippedKernel, 0), 1), 0.2);
 
-		final TVL1DenoisingSolverState<T> state = new TVL1DenoisingSolverState<T>(ops, numIt, lambda, input);
+		final TVL1Deconvolution2DSolverState<T> state = new TVL1Deconvolution2DSolverState<T>(ops, numIt, lambda, image,
+				kernel);
 
 		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, uq, state, tv, cf);
 		solver.compute(state, uq);
