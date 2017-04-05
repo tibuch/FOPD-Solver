@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.costfunction.denoising.L1DenoisingAscent;
+import net.imagej.ops.fopd.costfunction.denoising.L1DenoisingDescent;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;

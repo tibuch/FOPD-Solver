@@ -1,4 +1,4 @@
-package net.imagej.ops.fopd.costfunction;
+package net.imagej.ops.fopd.costfunction.denoising;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;

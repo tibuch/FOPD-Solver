@@ -1,7 +1,8 @@
-package net.imagej.ops.fopd.costfunction;
+package net.imagej.ops.fopd.costfunction.denoising;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.costfunction.AbstractCostFunction;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 

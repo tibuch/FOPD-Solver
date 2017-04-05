@@ -2,7 +2,7 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.L1Denoising2D;
+import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.TVHuber2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
