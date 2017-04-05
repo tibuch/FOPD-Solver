@@ -16,9 +16,11 @@ import net.imglib2.type.numeric.real.DoubleType;
  */
 public class SolverTest extends AbstractOpTest {
 
-	final static double[] expectedTVL1 = new double[] { 1.0, 0.7871691057882889, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, };
-	
-	final static double[] expectedTVHuberL1 = new double[] { 1.0, 0.7835696455044173, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, };
+	final static double[] expectedTVL1Denoising = new double[] { 1.0, 0.7869002898651334, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+			1.0 };
+
+	final static double[] expectedTVHuberL1Denoising = new double[] { 1.0, 0.7834267473541114, 1.0, 1.0, 1.0, 1.0, 1.0,
+			1.0, 1.0 };
 
 	@Test
 	public void TVL1DenoisingTest() {
