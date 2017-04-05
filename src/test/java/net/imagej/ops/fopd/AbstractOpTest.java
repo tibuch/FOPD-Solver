@@ -32,6 +32,10 @@ public abstract class AbstractOpTest {
 
 	protected Img<DoubleType> posNegImg;
 
+	protected Img<DoubleType> kernel;
+
+	protected Img<DoubleType> convolved;
+
 	protected Context createContext() {
 		return new Context(OpService.class, OpMatchingService.class, CacheService.class);
 	}
@@ -42,7 +46,7 @@ public abstract class AbstractOpTest {
 		img = ops.create().img(new int[] { 3, 3 });
 		posNegImg = ops.create().img(new int[] { 3, 3 });
 
-		final RandomAccess<DoubleType> ra = img.randomAccess();
+		RandomAccess<DoubleType> ra = img.randomAccess();
 		final RandomAccess<DoubleType> posNegRA = posNegImg.randomAccess();
 		for (int x = 0; x < img.dimension(0); x++) {
 			for (int y = 0; y < img.dimension(1); y++) {
@@ -58,6 +62,49 @@ public abstract class AbstractOpTest {
 		ra.get().set(1);
 		posNegRA.setPosition(new int[]{1, 1});
 		posNegRA.get().set(1);
+		
+		
+		kernel = ops.create().img(new int[]{3, 3});
+		ra = kernel.randomAccess();
+		ra.setPosition(new int[]{0,0});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{1,0});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{2,0});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{0,1});
+		ra.get().set(0.2);
+		ra.setPosition(new int[]{1,1});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{2,1});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{0,2});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{1,2});
+		ra.get().set(0.1);
+		ra.setPosition(new int[]{2,2});
+		ra.get().set(0.1);
+		
+		convolved = ops.create().img(new int[]{3, 3});
+		ra = convolved.randomAccess();
+		ra.setPosition(new int[]{0,0});
+		ra.get().set(0.7);
+		ra.setPosition(new int[]{1,0});
+		ra.get().set(0.8);
+		ra.setPosition(new int[]{2,0});
+		ra.get().set(0.8);
+		ra.setPosition(new int[]{0,1});
+		ra.get().set(0.8);
+		ra.setPosition(new int[]{1,1});
+		ra.get().set(0.8);
+		ra.setPosition(new int[]{2,1});
+		ra.get().set(0.8);
+		ra.setPosition(new int[]{0,2});
+		ra.get().set(0.7);
+		ra.setPosition(new int[]{1,2});
+		ra.get().set(0.8);
+		ra.setPosition(new int[]{2,2});
+		ra.get().set(0.8);
 	}
 
 	@After
