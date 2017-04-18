@@ -3,15 +3,19 @@ package net.imagej.ops.fopd.regularizer;
 import static org.junit.Assert.assertEquals;
 
 import net.imagej.ops.fopd.AbstractOpTest;
-import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.regularizer.tv.TotalVariation2DAscent;
+import net.imagej.ops.fopd.regularizer.tv.TotalVariation2DDescent;
+import net.imagej.ops.fopd.solver.SolverState;
+import net.imagej.ops.fopd.solver.TVL1DenoisingSolverState;
 import net.imglib2.Cursor;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
+import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import org.junit.Test;
 
 /**
+ * Total Variation test.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *
@@ -25,19 +29,24 @@ public class TotalVariationTest extends AbstractOpTest {
 	@Test
 	public void tvTest() {
 
-		Img<DoubleType> result = ops.create().img(img);
+		final TotalVariation2DAscent<DoubleType> ascentTV = ops.op(TotalVariation2DAscent.class, SolverState.class,
+				0.1);
+		final TotalVariation2DDescent<DoubleType> descentTV = ops.op(TotalVariation2DDescent.class, SolverState.class,
+				0.25);
 
-		final TotalVariation2DAscent<DoubleType> ascentTV = ops.op(TotalVariation2DAscent.class,
-				RandomAccessibleInterval.class, DualVariables.class, 0.1);
-		final TotalVariation2DDescent<DoubleType> descentTV = ops.op(TotalVariation2DDescent.class,
-				RandomAccessibleInterval.class, DualVariables.class, 0.25);
+		final SolverState<DoubleType> state = new TVL1DenoisingSolverState<DoubleType>(ops, ops.create().img(img));
+		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
+		Cursor<DoubleType> c = img.cursor();
 
-		final DualVariables<DoubleType> p = new DualVariables<DoubleType>(ops.create().img(img), ops.create().img(img));
+		while (c.hasNext()) {
+			c.next();
+			ra.setPosition(c);
+			ra.get().set(c.get().get());
+		}
+		ascentTV.calculate(state);
+		descentTV.calculate(state);
 
-		ascentTV.compute(p, img);
-		descentTV.compute(p, result);
-
-		final Cursor<DoubleType> c = result.cursor();
+		c = ((IterableInterval<DoubleType>) state.getIntermediateResult(0)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
 			assertEquals("Total Variation differs", expected[i++], c.next().get(), 0);

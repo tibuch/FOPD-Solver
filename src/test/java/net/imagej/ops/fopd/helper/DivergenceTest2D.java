@@ -2,16 +2,15 @@ package net.imagej.ops.fopd.helper;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 import net.imagej.ops.fopd.AbstractOpTest;
-import net.imagej.ops.fopd.DualVariables;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.outofbounds.OutOfBoundsBorderFactory;
 import net.imglib2.type.numeric.real.DoubleType;
+
+import org.junit.Test;
 
 /**
  * Test for {@link DefaultBackwardDifference}.
@@ -34,10 +33,8 @@ public class DivergenceTest2D extends AbstractOpTest {
 				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()));
 
 		@SuppressWarnings("unchecked")
-		DualVariables<DoubleType> d = new DualVariables<DoubleType>(gradientX, gradientY);
-
-		@SuppressWarnings("unchecked")
-		final Cursor<DoubleType> c = ((IterableInterval<DoubleType>) ops.run(DefaultDivergence2D.class, d)).cursor();
+		final Cursor<DoubleType> c = ((IterableInterval<DoubleType>) ops.run(DefaultDivergence2D.class,
+				RandomAccessibleInterval.class, new RandomAccessibleInterval[] { gradientX, gradientY })).cursor();
 		int i = 0;
 		while (c.hasNext()) {
 			assertEquals("Divergence differs", expected[i++], c.next().get(), 0);
