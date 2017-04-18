@@ -1,10 +1,11 @@
-package net.imagej.ops.fopd.costfunction.denoising;
+package net.imagej.ops.fopd.costfunction.l1norm;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
 import net.imagej.ops.fopd.Descent;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.operator.LinearOperator;
 import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
@@ -20,15 +21,18 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 /**
- * L1-Denoising of one 2D image: {@link Descent} Step.
+ * L1-Deconvolution with known kernel of one 2D image: {@link Descent} Step.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *
  * @param <T>
  */
 @Plugin(type = Descent.class)
-public class L1DenoisingDescent<T extends RealType<T>>
+public class L1Norm2DDescent<T extends RealType<T>>
 		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Descent<T> {
+
+	@Parameter
+	private LinearOperator<T> operator;
 
 	@Parameter
 	private double stepSize;
@@ -43,12 +47,12 @@ public class L1DenoisingDescent<T extends RealType<T>>
 	@SuppressWarnings("unchecked")
 	public SolverState<T> calculate(SolverState<T> input) {
 		final DualVariables<T> dualVariables = input.getCostFunctionDV();
-		
+
 		if (mapperSubtract == null) {
 			init(dualVariables);
 		}
 
-		mapperSubtract.compute(input.getIntermediateResult(0), Converters.convert(dualVariables.getDualVariable(0), converter, input.getType()),
+		mapperSubtract.compute(input.getIntermediateResult(0), Converters.convert(operator.calculate(dualVariables.getDualVariable(0)), converter, input.getType()),
 				(IterableInterval<T>) input.getIntermediateResult(0));
 		
 		return input;

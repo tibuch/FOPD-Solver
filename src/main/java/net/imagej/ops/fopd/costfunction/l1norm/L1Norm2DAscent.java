@@ -1,4 +1,4 @@
-package net.imagej.ops.fopd.costfunction.denoising;
+package net.imagej.ops.fopd.costfunction.l1norm;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
@@ -7,6 +7,7 @@ import net.imagej.ops.fopd.Ascent;
 import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.fopd.helper.DefaultL1Projector;
 import net.imagej.ops.fopd.helper.DefaultL2Norm;
+import net.imagej.ops.fopd.operator.LinearOperator;
 import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
 import net.imagej.ops.map.MapBinaryInplace1s.IIAndIIParallel;
@@ -24,14 +25,14 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 /**
- * L1-Denoising of one 2D image: {@link Ascent} Step.
+ * L1-Deconvolution with known kernel of one 2D image: {@link Ascent} Step.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *
  * @param <T>
  */
 @Plugin(type = Ascent.class)
-public class L1DenoisingAscent<T extends RealType<T>>
+public class L1Norm2DAscent<T extends RealType<T>>
 		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Ascent<T> {
 
 	@Parameter
@@ -39,6 +40,9 @@ public class L1DenoisingAscent<T extends RealType<T>>
 
 	@Parameter
 	private RandomAccessibleInterval<T> f;
+
+	@Parameter
+	private LinearOperator<T> operator;
 
 	private RAIAndRAIToIIParallel<T, T, T> mapperSubtract;
 	private RandomAccessibleInterval<T> diff;
@@ -55,24 +59,26 @@ public class L1DenoisingAscent<T extends RealType<T>>
 	@SuppressWarnings("unchecked")
 	public SolverState<T> calculate(SolverState<T> input) {
 		final DualVariables<T> dualVariables = input.getCostFunctionDV();
-		
+
 		if (mapperSubtract == null || mapperAdd == null || diff == null || norm == null || normComputer == null
 				|| inplaceMapper == null) {
 			init(dualVariables);
 		}
 
-		mapperSubtract.compute(input.getResultImage(0), f, (IterableInterval<T>) diff);
+		mapperSubtract.compute(operator.calculate(input.getResultImage(0)), f, (IterableInterval<T>) diff);
 
-		mapperAdd.compute(dualVariables.getDualVariable(0), diff, (IterableInterval<T>) dualVariables.getDualVariable(0));
+		mapperAdd.compute(dualVariables.getDualVariable(0), diff,
+				(IterableInterval<T>) dualVariables.getDualVariable(0));
 
 		normComputer.compute(dualVariables.getAllDualVariables(), norm);
 		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(0), (IterableInterval<T>) norm);
-		
+
 		return input;
 	}
 
 	@SuppressWarnings("unchecked")
 	private void init(final DualVariables<T> input) {
+
 		final BinaryComputerOp<T, T, T> subtractComputer = Computers.binary(ops, Ops.Math.Subtract.class,
 				input.getType(), input.getType(), input.getType());
 		mapperSubtract = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
@@ -87,7 +93,8 @@ public class L1DenoisingAscent<T extends RealType<T>>
 		diff = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
 
 		norm = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
-		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
+		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval[].class);
 		final BinaryInplace1Op<? super T, T, T> projector = Inplaces.binary1(ops, DefaultL1Projector.class,
 				input.getType(), input.getType(), 1);
 		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class, IterableInterval.class, IterableInterval.class,
