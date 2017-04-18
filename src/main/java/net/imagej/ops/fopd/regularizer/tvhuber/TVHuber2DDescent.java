@@ -1,6 +1,7 @@
-package net.imagej.ops.fopd.regularizer;
+package net.imagej.ops.fopd.regularizer.tvhuber;
 
 import net.imagej.ops.fopd.Descent;
+import net.imagej.ops.fopd.regularizer.tv.AbstractTV2DDescent;
 import net.imglib2.type.numeric.RealType;
 
 import org.scijava.plugin.Plugin;
