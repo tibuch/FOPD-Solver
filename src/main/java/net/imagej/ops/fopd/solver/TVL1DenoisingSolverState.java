@@ -17,42 +17,34 @@ import net.imglib2.type.numeric.RealType;
  */
 public class TVL1DenoisingSolverState<T extends RealType<T>> implements SolverState<T> {
 
-	private int numIterations;
-
-	private double lambda;
-
-	private RandomAccessibleInterval<T> image;
-
 	private DualVariables<T> regularizerDV;
 
 	private DualVariables<T> costFunctionDV;
 
 	private RandomAccessibleInterval<T> tmp;
 
+	private RandomAccessibleInterval<T> result;
+
+	private T type;
+
 	@SuppressWarnings("unchecked")
-	public TVL1DenoisingSolverState(final OpService ops, final int numIterations, final double lambda,
+	public TVL1DenoisingSolverState(final OpService ops, 
 			final RandomAccessibleInterval<T> image) {
-		this.numIterations = numIterations;
-		this.lambda = lambda;
-		this.image = image;
 
 		this.regularizerDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image),
 				(RandomAccessibleInterval<T>) ops.create().img(image));
 		this.costFunctionDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image));
 
 		this.tmp = (RandomAccessibleInterval<T>) ops.create().img(image);
+		this.result = (RandomAccessibleInterval<T>) ops.create().img(image);
+		this.type = image.randomAccess().get().createVariable();
 	}
-
-	public int getNumIterations() {
-		return this.numIterations;
-	}
-
-	public double getLambda() {
-		return this.lambda;
-	}
-
-	public RandomAccessibleInterval<T> getImage() {
-		return this.image;
+	
+	public RandomAccessibleInterval<T> getResultImage(final int i) {
+		if (i != 0) {
+			throw new ArrayIndexOutOfBoundsException("Only one result available.");
+		}
+		return this.result;
 	}
 
 	public DualVariables<T> getRegularizerDV() {
@@ -64,10 +56,25 @@ public class TVL1DenoisingSolverState<T extends RealType<T>> implements SolverSt
 	}
 
 	public T getType() {
-		return image.randomAccess().get().createVariable();
+		return this.type;
 	}
 
-	public RandomAccessibleInterval<T> getIntermediateResult() {
+	public RandomAccessibleInterval<T> getIntermediateResult(final int i) {
+		if (i != 0) {
+			throw new ArrayIndexOutOfBoundsException("Only one intermediate result available.");
+		}
 		return this.tmp;
+	}
+
+	public SolverState<T> getSubSolverState(int i) {
+		throw new NullPointerException("This denoising solver does not depend on another solver.");
+	}
+
+	public int numResultImages() {
+		return 1;
+	}
+
+	public int numIntermediateResults() {
+		return 1;
 	}
 }

@@ -5,10 +5,11 @@ import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
 import net.imagej.ops.fopd.Descent;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
-import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
+import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -27,7 +28,7 @@ import org.scijava.plugin.Plugin;
  */
 @Plugin(type = Descent.class)
 public class L1DenoisingDescent<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> implements Descent<T> {
+		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Descent<T> {
 
 	@Parameter
 	private double stepSize;
@@ -40,19 +41,17 @@ public class L1DenoisingDescent<T extends RealType<T>>
 	private Converter<T, T> converter;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
-	}
-
-	@SuppressWarnings("unchecked")
-	public void compute(DualVariables<T> input, RandomAccessibleInterval<T> output) {
-
+	public SolverState<T> calculate(SolverState<T> input) {
+		final DualVariables<T> dualVariables = input.getCostFunctionDV();
+		
 		if (mapperSubtract == null) {
-			init(input);
+			init(dualVariables);
 		}
 
-		mapperSubtract.compute(output, Converters.convert(input.getDualVariable(0), converter, input.getType()),
-				(IterableInterval<T>) output);
+		mapperSubtract.compute(input.getIntermediateResult(0), Converters.convert(dualVariables.getDualVariable(0), converter, input.getType()),
+				(IterableInterval<T>) input.getIntermediateResult(0));
+		
+		return input;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -65,8 +64,8 @@ public class L1DenoisingDescent<T extends RealType<T>>
 
 		converter = new Converter<T, T>() {
 
-			public void convert(T input, T output) {
-				output.setReal(input.getRealDouble() * stepSize);
+			public void convert(T in, T out) {
+				out.setReal(in.getRealDouble() * stepSize);
 			}
 		};
 	}

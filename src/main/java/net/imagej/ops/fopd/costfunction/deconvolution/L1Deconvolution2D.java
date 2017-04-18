@@ -1,11 +1,10 @@
 package net.imagej.ops.fopd.costfunction.deconvolution;
 
 import net.imagej.ops.OpService;
-import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.fopd.costfunction.AbstractCostFunction;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 
 /**
  * Deconvolution with L1-Norm of one 2D image.
@@ -23,9 +22,9 @@ public class L1Deconvolution2D<T extends RealType<T>> extends AbstractCostFuncti
 	public L1Deconvolution2D(final OpService ops, final RandomAccessibleInterval<T> image,
 			final RandomAccessibleInterval<T> kernel, final RandomAccessibleInterval<T> flippedKernel,
 			final double descentStepSize) {
-		this.ascent = ops.op(L1Deconvolution2DAscent.class, RandomAccessibleInterval.class, DualVariables.class, image,
+		this.ascent = ops.op(L1Deconvolution2DAscent.class, SolverState.class, image,
 				kernel);
-		this.descent = ops.op(L1Deconvolution2DDescent.class, RandomAccessibleInterval.class, DualVariables.class,
+		this.descent = ops.op(L1Deconvolution2DDescent.class, SolverState.class,
 				flippedKernel, descentStepSize);
 	}
 }

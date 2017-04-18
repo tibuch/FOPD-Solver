@@ -2,8 +2,8 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.fopd.costfunction.CostFunction;
 import net.imagej.ops.fopd.regularizer.Regularizer;
-import net.imagej.ops.special.hybrid.UnaryHybridCF;
-import net.imglib2.RandomAccessibleInterval;
+import net.imagej.ops.fopd.solver.SolverState;
+import net.imagej.ops.special.function.UnaryFunctionOp;
 import net.imglib2.type.numeric.RealType;
 
 /**
@@ -15,6 +15,6 @@ import net.imglib2.type.numeric.RealType;
  * @param <T>
  */
 public interface Descent<T extends RealType<T>>
-		extends UnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> {
+		extends UnaryFunctionOp<SolverState<T>, SolverState<T>> {
 	// NB: Marker Interface
 }

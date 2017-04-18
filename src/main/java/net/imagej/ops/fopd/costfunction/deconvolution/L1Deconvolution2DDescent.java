@@ -7,13 +7,14 @@ import net.imagej.ops.filter.convolve.ConvolveFFTC;
 import net.imagej.ops.filter.pad.PadInputFFTMethods;
 import net.imagej.ops.fopd.Descent;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.computer.UnaryComputerOp;
+import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.function.BinaryFunctionOp;
 import net.imagej.ops.special.function.Functions;
-import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.IterableInterval;
@@ -36,7 +37,7 @@ import org.scijava.plugin.Plugin;
  */
 @Plugin(type = Descent.class)
 public class L1Deconvolution2DDescent<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> implements Descent<T> {
+		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Descent<T> {
 
 	@Parameter
 	private RandomAccessibleInterval<T> flippedKernel;
@@ -62,21 +63,19 @@ public class L1Deconvolution2DDescent<T extends RealType<T>>
 	private FinalDimensions paddedDims;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
-	}
-
-	@SuppressWarnings("unchecked")
-	public void compute(DualVariables<T> input, RandomAccessibleInterval<T> output) {
+	public SolverState<T> calculate(SolverState<T> input) {
+		final DualVariables<T> dualVariables = input.getCostFunctionDV();
 
 		if (mapperSubtract == null) {
-			init(input);
+			init(dualVariables);
 		}
 
-		convolver.compute(padOp.calculate(input.getDualVariable(0), paddedDims), convolution);
+		convolver.compute(padOp.calculate(dualVariables.getDualVariable(0), paddedDims), convolution);
 
-		mapperSubtract.compute(output, Converters.convert(convolution, converter, input.getType()),
-				(IterableInterval<T>) output);
+		mapperSubtract.compute(input.getIntermediateResult(0), Converters.convert(convolution, converter, input.getType()),
+				(IterableInterval<T>) input.getIntermediateResult(0));
+		
+		return input;
 	}
 
 	@SuppressWarnings("unchecked")

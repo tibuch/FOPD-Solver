@@ -8,8 +8,9 @@ import net.imglib2.type.numeric.RealType;
 /**
  * Specific implementation of {@link SolverState} for L1-TVHuber-Denoising.
  * 
- * Energy: E(u) = lambda * TV-Huber(u)_alpha + |u - f|_1, where u is the denoised solution,
- * lambda is the smoothness weight and f is the observed image.
+ * Energy: E(u) = lambda * TV-Huber(u)_alpha + |u - f|_1, where u is the
+ * denoised solution, lambda is the smoothness weight and f is the observed
+ * image.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz.
  *
@@ -17,13 +18,9 @@ import net.imglib2.type.numeric.RealType;
  */
 public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements SolverState<T> {
 
-	private int numIterations;
-
-	private double lambda;
-	
-	private double alpha;
-
 	private RandomAccessibleInterval<T> image;
+
+	private RandomAccessibleInterval<T> result;
 
 	private DualVariables<T> regularizerDV;
 
@@ -32,11 +29,7 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 	private RandomAccessibleInterval<T> tmp;
 
 	@SuppressWarnings("unchecked")
-	public TVHuberL1DenoisingSolverState(final OpService ops, final int numIterations, final double lambda, final double alpha,
-			final RandomAccessibleInterval<T> image) {
-		this.numIterations = numIterations;
-		this.lambda = lambda;
-		this.alpha = alpha;
+	public TVHuberL1DenoisingSolverState(final OpService ops, final RandomAccessibleInterval<T> image) {
 		this.image = image;
 
 		this.regularizerDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image),
@@ -44,22 +37,14 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 		this.costFunctionDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image));
 
 		this.tmp = (RandomAccessibleInterval<T>) ops.create().img(image);
+		this.result = (RandomAccessibleInterval<T>) ops.create().img(image);
 	}
 
-	public int getNumIterations() {
-		return this.numIterations;
-	}
-
-	public double getLambda() {
-		return this.lambda;
-	}
-	
-	public double getAlpha() {
-		return this.alpha;
-	}
-
-	public RandomAccessibleInterval<T> getImage() {
-		return this.image;
+	public RandomAccessibleInterval<T> getResultImage(final int i) {
+		if (i != 0) {
+			throw new ArrayIndexOutOfBoundsException("Only one result available.");
+		}
+		return this.result;
 	}
 
 	public DualVariables<T> getRegularizerDV() {
@@ -74,7 +59,22 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 		return image.randomAccess().get().createVariable();
 	}
 
-	public RandomAccessibleInterval<T> getIntermediateResult() {
+	public RandomAccessibleInterval<T> getIntermediateResult(final int i) {
+		if (i != 0) {
+			throw new ArrayIndexOutOfBoundsException("Only one intermediate result available.");
+		}
 		return this.tmp;
+	}
+
+	public SolverState<T> getSubSolverState(int i) {
+		throw new NullPointerException("This denoising solver does not depend on another solver.");
+	}
+
+	public int numResultImages() {
+		return 1;
+	}
+
+	public int numIntermediateResults() {
+		return 1;
 	}
 }

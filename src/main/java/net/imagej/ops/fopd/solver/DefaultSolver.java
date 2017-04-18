@@ -11,7 +11,7 @@ import net.imagej.ops.map.MapIIInplaceParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.computer.UnaryComputerOp;
-import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
+import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.inplace.Inplaces;
 import net.imagej.ops.special.inplace.UnaryInplaceOp;
 import net.imglib2.IterableInterval;
@@ -35,13 +35,16 @@ import org.scijava.plugin.Plugin;
  */
 @Plugin(type = Solver.class)
 public class DefaultSolver<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<SolverState<T>, RandomAccessibleInterval<T>> implements Solver<T> {
+		extends AbstractUnaryFunctionOp<SolverState<T>, RandomAccessibleInterval<T>> implements Solver<T> {
 
 	@Parameter
 	private Regularizer<T> regularizer;
 
 	@Parameter
 	private CostFunction<T> costfunction;
+
+	@Parameter
+	private int numIterations;
 
 	@Parameter
 	private OpService ops;
@@ -64,49 +67,47 @@ public class DefaultSolver<T extends RealType<T>>
 	private Converter<T, T> converter;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(SolverState<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input.getImage());
-	}
+	public RandomAccessibleInterval<T> calculate(SolverState<T> input) {
 
-	@SuppressWarnings("unchecked")
-	public void compute(SolverState<T> input, RandomAccessibleInterval<T> result) {
-
-		initComputers(input, result);
+		if (mapperSubtract == null || copyComputer == null || converter == null || clipperMapper == null) {
+			initComputers(input);
+		}
 
 		// only needed because of a matcher bug.
 		final RandomAccessibleInterval<T> tmp = (RandomAccessibleInterval<T>) ops.create()
-				.img(input.getIntermediateResult());
+				.img(input.getIntermediateResult(0));
 
-		for (int i = 0; i < input.getNumIterations(); i++) {
+		for (int i = 0; i < numIterations; i++) {
 
-			regularizer.getAscent().compute(input.getRegularizerDV(), result);
-			costfunction.getAscent().compute(input.getCostFunctionDV(), result);
+			regularizer.getAscent().calculate(input);
+			costfunction.getAscent().calculate(input);
 
-			copyComputer.compute(input.getIntermediateResult(), result);
+			copyComputer.compute(input.getIntermediateResult(0), input.getResultImage(0));
 
-			regularizer.getDescent().compute(input.getRegularizerDV(), input.getIntermediateResult());
-			costfunction.getDescent().compute(input.getCostFunctionDV(), input.getIntermediateResult());
+			regularizer.getDescent().calculate(input);
+			costfunction.getDescent().calculate(input);
 
 			// mapperSubtract.compute(2*u, uq, uq) does not work, because wrong
 			// map is chosen later on.
 			mapperSubtract.compute(
-					Converters.convert(input.getIntermediateResult(), converter, input.getRegularizerDV().getType()),
-					(IterableInterval<T>) result, tmp);
+					Converters.convert(input.getIntermediateResult(0), converter, input.getRegularizerDV().getType()),
+					(IterableInterval<T>) input.getResultImage(0), tmp);
 
-			copyComputer.compute(tmp, result);
-			clipperMapper.mutate((IterableInterval<T>) result);
+			copyComputer.compute(tmp, input.getResultImage(0));
+			clipperMapper.mutate((IterableInterval<T>) input.getResultImage(0));
 		}
+		return input.getResultImage(0);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void initComputers(final SolverState<T> input, final RandomAccessibleInterval<T> output) {
+	private void initComputers(final SolverState<T> input) {
 		final T type = input.getType();
 
 		mapperSubtract = (RAIAndIIToRAIParallel<T, T, T>) ops.op(Map.class, RandomAccessibleInterval.class,
 				RandomAccessibleInterval.class, IterableInterval.class, BinaryComputerOp.class);
 		mapperSubtract.setOp(Computers.binary(ops, Ops.Math.Subtract.class, type, type, type));
 
-		copyComputer = Computers.unary(ops, Ops.Copy.RAI.class, input.getImage(), output);
+		copyComputer = Computers.unary(ops, Ops.Copy.RAI.class, input.getResultImage(0), input.getResultImage(0));
 
 		converter = new Converter<T, T>() {
 

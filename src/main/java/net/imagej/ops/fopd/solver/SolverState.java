@@ -12,23 +12,6 @@ import net.imglib2.type.numeric.RealType;
  * @param <T>
  */
 public interface SolverState<T extends RealType<T>> {
-	/**
-	 * 
-	 * @return number of iterations
-	 */
-	int getNumIterations();
-
-	/**
-	 * 
-	 * @return smoothness weight
-	 */
-	double getLambda();
-
-	/**
-	 * 
-	 * @return the observed image
-	 */
-	RandomAccessibleInterval<T> getImage();
 
 	/**
 	 * 
@@ -52,5 +35,13 @@ public interface SolverState<T extends RealType<T>> {
 	 * 
 	 * @return the intermediate result of the solver
 	 */
-	RandomAccessibleInterval<T> getIntermediateResult();
+	RandomAccessibleInterval<T> getIntermediateResult(final int i);
+	
+	SolverState<T> getSubSolverState(final int i);
+	
+	RandomAccessibleInterval<T> getResultImage(final int i);
+	
+	int numResultImages();
+	
+	int numIntermediateResults();
 }
