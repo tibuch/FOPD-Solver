@@ -1,6 +1,5 @@
 package net.imagej.ops.fopd.helper;
 
-import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -17,6 +16,7 @@ import net.imglib2.type.numeric.RealType;
  *
  * @param <T>
  */
-public interface L2Norm<T extends RealType<T>> extends UnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> {
+public interface L2Norm<T extends RealType<T>>
+		extends UnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>> {
 	// NB: Marker Interface
 }

@@ -1,6 +1,5 @@
 package net.imagej.ops.fopd.helper;
 
-import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -20,6 +19,6 @@ import net.imglib2.type.numeric.RealType;
  * @param <T>
  */
 public interface Divergence<T extends RealType<T>>
-		extends UnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> {
+		extends UnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>> {
 	// NB: Marker Interface
 }
