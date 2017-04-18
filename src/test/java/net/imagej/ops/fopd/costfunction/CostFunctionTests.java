@@ -66,7 +66,7 @@ public class CostFunctionTests extends AbstractOpTest {
 
 		final KLDivergence2DAscent<DoubleType> ascentL1Denoising = ops.op(KLDivergence2DAscent.class, SolverState.class,
 				img, ops.op(Identity.class, img));
-		final KLDivergence2DDescent<DoubleType> descentL1Denoising = ops.op(KLDivergence2DDescent.class,
+		final AbstractCostFunction2DDescent<DoubleType> descentL1Denoising = ops.op(KLDivergence2DDescent.class,
 				SolverState.class, ops.op(Identity.class, img), 0.25);
 
 		final SolverState<DoubleType> state = new DefaultSolverState<DoubleType>(ops, ops.create().img(img));
