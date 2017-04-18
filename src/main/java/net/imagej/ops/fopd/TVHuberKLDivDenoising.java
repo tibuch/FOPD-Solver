@@ -2,7 +2,7 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2D;
+import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergence2D;
 import net.imagej.ops.fopd.operator.Identity;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2D;
@@ -28,7 +28,7 @@ import org.scijava.plugin.Plugin;
  *
  */
 @Plugin(type = UnaryHybridCF.class)
-public class TVHuberL1Denoising<T extends RealType<T>>
+public class TVHuberKLDivDenoising<T extends RealType<T>>
 		extends AbstractUnaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
 
 	@Parameter
@@ -50,7 +50,7 @@ public class TVHuberL1Denoising<T extends RealType<T>>
 				input);
 
 		final TVHuber2D<T> tv = new TVHuber2D<T>(ops, lambda, alpha, 0.25);
-		final L1Norm2D<T> cf = new L1Norm2D<T>(ops, input, ops.op(Identity.class, input), ops.op(Identity.class, input), 0.25);
+		final KLDivergence2D<T> cf = new KLDivergence2D<T>(ops, input, ops.op(Identity.class, input), ops.op(Identity.class, input), 0.25);
 
 		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tv, cf, numIt);
 		return solver.calculate(state);

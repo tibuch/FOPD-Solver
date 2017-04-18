@@ -2,7 +2,7 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2D;
+import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergence2D;
 import net.imagej.ops.fopd.operator.FastConvolver;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2D;
@@ -29,7 +29,7 @@ import org.scijava.plugin.Plugin;
  *
  */
 @Plugin(type = UnaryHybridCF.class)
-public class TVHuberL1Deconvolution<T extends RealType<T>> extends
+public class TVHuberKLDivDeconvolution<T extends RealType<T>> extends
 		AbstractBinaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
 
 	@Parameter
@@ -50,7 +50,7 @@ public class TVHuberL1Deconvolution<T extends RealType<T>> extends
 
 		final TVHuber2D<T> tv = new TVHuber2D<T>(ops, lambda, alpha, 0.2);
 		RandomAccessibleInterval<T> flippedKernel = ops.copy().rai(kernel);
-		final L1Norm2D<T> cf = new L1Norm2D<T>(ops, input, ops.op(FastConvolver.class, input, kernel),
+		final KLDivergence2D<T> cf = new KLDivergence2D<T>(ops, input, ops.op(FastConvolver.class, input, kernel),
 				ops.op(FastConvolver.class, input, Views.invertAxis(Views.invertAxis(flippedKernel, 0), 1)), 0.2);
 
 		final DefaultSolverState<T> state = new DefaultSolverState<T>(ops, input);

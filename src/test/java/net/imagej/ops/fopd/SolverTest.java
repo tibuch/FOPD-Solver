@@ -31,6 +31,9 @@ public class SolverTest extends AbstractOpTest {
 	final static double[] expectedTVHuberL1Deconvolution = new double[] { 0.8449143152960898, 0.9578770115357464, 1.0,
 			0.8949538345908679, 1.0, 1.0, 0.8449142943570016, 0.9578769702830028, 1.0 };
 
+	private static final double[] expectedTGVL1Deconvolution = new double[] { 0.8439089252434915, 0.9610056122974837,
+			1.0, 0.8914287608473277, 1.0, 1.0, 0.8445419552876334, 0.9618260754956498, 1.0 };
+
 	@Test
 	public void TVL1DenoisingTest() {
 
@@ -95,6 +98,20 @@ public class SolverTest extends AbstractOpTest {
 			c.next();
 			assertEquals("Pixel at [" + c.getDoublePosition(0) + "," + c.getDoublePosition(1) + "] differs.",
 					expectedTVHuberL1Deconvolution[i++], c.get().get(), 0);
+		}
+	}
+
+	@Test
+	public void TGVL1DeconvolutionTest() {
+
+		@SuppressWarnings("unchecked")
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(TGVL1Deconvolution.class, convolved, kernel, 0.5, 1,
+				10)).cursor();
+		int i = 0;
+		while (c.hasNext()) {
+			c.next();
+			assertEquals("Pixel at [" + c.getDoublePosition(0) + "," + c.getDoublePosition(1) + "] differs.",
+					expectedTGVL1Deconvolution[i++], c.get().get(), 0);
 		}
 	}
 }

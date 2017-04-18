@@ -2,7 +2,8 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
+import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2D;
+import net.imagej.ops.fopd.operator.Identity;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tgv.TGV2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
@@ -45,7 +46,7 @@ public class TGVL1Denoising<T extends RealType<T>>
 	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
 
 		final TGV2D<T> tgv = new TGV2D<T>(ops, alpha, beta, 0.25);
-		final L1Denoising2D<T> cf = new L1Denoising2D<T>(ops, input, 0.25);
+		final L1Norm2D<T> cf = new L1Norm2D<T>(ops, input, ops.op(Identity.class, input), ops.op(Identity.class, input), 0.25);
 
 		final TGVSolverState<T> state = new TGVSolverState<T>(ops, input);
 

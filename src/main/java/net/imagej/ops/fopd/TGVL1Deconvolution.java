@@ -2,7 +2,8 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.deconvolution.L1Deconvolution2D;
+import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2D;
+import net.imagej.ops.fopd.operator.FastConvolver;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tgv.TGV2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
@@ -44,15 +45,14 @@ public class TGVL1Deconvolution<T extends RealType<T>> extends
 	private int numIt;
 
 	@SuppressWarnings({ "unchecked" })
-	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> image,
+	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input,
 			RandomAccessibleInterval<T> kernel) {
 
 		final TGV2D<T> tgv = new TGV2D<T>(ops, alpha, beta, 0.2);
 		RandomAccessibleInterval<T> flippedKernel = ops.copy().rai(kernel);
-		final L1Deconvolution2D<T> cf = new L1Deconvolution2D<T>(ops, image, kernel,
-				Views.invertAxis(Views.invertAxis(flippedKernel, 0), 1), 0.2);
-
-		final TGVSolverState<T> state = new TGVSolverState<T>(ops, image);
+		final L1Norm2D<T> cf = new L1Norm2D<T>(ops, input, ops.op(FastConvolver.class, input, kernel),
+				ops.op(FastConvolver.class, input, Views.invertAxis(Views.invertAxis(flippedKernel, 0), 1)), 0.2);
+		final TGVSolverState<T> state = new TGVSolverState<T>(ops, input);
 
 		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tgv, cf, numIt);
 		solver.calculate(state);

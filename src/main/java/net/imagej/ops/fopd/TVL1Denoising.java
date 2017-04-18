@@ -2,7 +2,8 @@ package net.imagej.ops.fopd;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
+import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2D;
+import net.imagej.ops.fopd.operator.Identity;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tv.TotalVariation2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
@@ -42,7 +43,7 @@ public class TVL1Denoising<T extends RealType<T>>
 	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
 
 		final TotalVariation2D<T> tv = new TotalVariation2D<T>(ops, lambda, 0.25);
-		final L1Denoising2D<T> cf = new L1Denoising2D<T>(ops, input, 0.25);
+		final L1Norm2D<T> cf = new L1Norm2D<T>(ops, input, ops.op(Identity.class, input), ops.op(Identity.class, input), 0.25);
 
 		final DefaultSolverState<T> state = new DefaultSolverState<T>(ops, input);
 
