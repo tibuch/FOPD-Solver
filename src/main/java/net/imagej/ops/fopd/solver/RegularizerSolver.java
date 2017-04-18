@@ -3,7 +3,6 @@ package net.imagej.ops.fopd.solver;
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
-import net.imagej.ops.fopd.costfunction.CostFunction;
 import net.imagej.ops.fopd.helper.Default01Clipper;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndIIToRAIParallel;
@@ -34,14 +33,11 @@ import org.scijava.plugin.Plugin;
  * @param <T>
  */
 @Plugin(type = Solver.class)
-public class DefaultSolver<T extends RealType<T>>
+public class RegularizerSolver<T extends RealType<T>>
 		extends AbstractUnaryFunctionOp<SolverState<T>, RandomAccessibleInterval<T>> implements Solver<T> {
 
 	@Parameter
 	private Regularizer<T> regularizer;
-
-	@Parameter
-	private CostFunction<T> costfunction;
 
 	@Parameter
 	private int numIterations;
@@ -80,23 +76,26 @@ public class DefaultSolver<T extends RealType<T>>
 		for (int i = 0; i < numIterations; i++) {
 
 			regularizer.getAscent().calculate(input);
-			costfunction.getAscent().calculate(input);
-
-			copyComputer.compute(input.getIntermediateResult(0), input.getResultImage(0));
-
+			for (int j = 0; j < input.getSubSolverState(0).numIntermediateResults(); j++) {
+				copyComputer.compute(input.getSubSolverState(0).getIntermediateResult(j),
+						input.getSubSolverState(0).getResultImage(j));
+			}
 			regularizer.getDescent().calculate(input);
-			costfunction.getDescent().calculate(input);
 
-			// mapperSubtract.compute(2*u, uq, uq) does not work, because wrong
-			// map is chosen later on.
-			mapperSubtract.compute(
-					Converters.convert(input.getIntermediateResult(0), converter, input.getRegularizerDV().getType()),
-					(IterableInterval<T>) input.getResultImage(0), tmp);
+			for (int j = 0; j < input.getSubSolverState(0).numIntermediateResults(); j++) {
+				// mapperSubtract.compute(2*u, uq, uq) does not work, because
+				// wrong
+				// map is chosen later on.
+				mapperSubtract.compute(
+						Converters.convert(input.getSubSolverState(0).getIntermediateResult(j), converter,
+								input.getRegularizerDV().getType()),
+						(IterableInterval<T>) input.getSubSolverState(0).getResultImage(j), tmp);
 
-			copyComputer.compute(tmp, input.getResultImage(0));
-			clipperMapper.mutate((IterableInterval<T>) input.getResultImage(0));
+				copyComputer.compute(tmp, input.getSubSolverState(0).getResultImage(j));
+				clipperMapper.mutate((IterableInterval<T>) input.getSubSolverState(0).getResultImage(j));
+			}
 		}
-		return input.getResultImage(0);
+		return input.getSubSolverState(0).getResultImage(0);
 	}
 
 	@SuppressWarnings("unchecked")

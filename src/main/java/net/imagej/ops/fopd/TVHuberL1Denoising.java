@@ -4,10 +4,10 @@ import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
 import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
 import net.imagej.ops.fopd.regularizer.Regularizer;
-import net.imagej.ops.fopd.regularizer.TVHuber2D;
+import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
 import net.imagej.ops.fopd.solver.TVHuberL1DenoisingSolverState;
-import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
+import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -27,7 +27,7 @@ import org.scijava.plugin.Plugin;
  */
 @Plugin(type = UnaryHybridCF.class)
 public class TVHuberL1Denoising<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
+		extends AbstractUnaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
 
 	@Parameter
 	private OpService ops;
@@ -41,21 +41,16 @@ public class TVHuberL1Denoising<T extends RealType<T>>
 	@Parameter
 	private int numIt;
 
-	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(RandomAccessibleInterval<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input);
-	}
-
 	@SuppressWarnings({ "unchecked" })
-	public void compute(RandomAccessibleInterval<T> input, RandomAccessibleInterval<T> uq) {
+	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
 
-		final TVHuberL1DenoisingSolverState<T> state = new TVHuberL1DenoisingSolverState<T>(ops, numIt, lambda, alpha,
+		final TVHuberL1DenoisingSolverState<T> state = new TVHuberL1DenoisingSolverState<T>(ops,
 				input);
 
-		final TVHuber2D<T> tv = new TVHuber2D<T>(ops, state.getLambda(), state.getAlpha(), 0.25);
+		final TVHuber2D<T> tv = new TVHuber2D<T>(ops, lambda, alpha, 0.25);
 		final L1Denoising2D<T> cf = new L1Denoising2D<T>(ops, input, 0.25);
 
-		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, uq, state, tv, cf);
-		solver.compute(state, uq);
+		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tv, cf, numIt);
+		return solver.calculate(state);
 	}
 }

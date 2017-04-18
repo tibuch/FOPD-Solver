@@ -1,15 +1,18 @@
-package net.imagej.ops.fopd.costfunction.denoising;
+package net.imagej.ops.fopd.regularizer.tgv;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
 import net.imagej.ops.fopd.Descent;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.helper.DefaultDivergence2D;
 import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
+import net.imagej.ops.special.function.Functions;
+import net.imagej.ops.special.function.UnaryFunctionOp;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -20,14 +23,16 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 /**
- * L1-Denoising of one 2D image: {@link Descent} Step.
+ * Abstract Total Variation of one 2D image: {@link Descent} Step.
+ * 
+ * Note: Is the same for TV and TV-Huber.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *
  * @param <T>
  */
 @Plugin(type = Descent.class)
-public class L1DenoisingDescent<T extends RealType<T>>
+public class TGV2DDescent<T extends RealType<T>>
 		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Descent<T> {
 
 	@Parameter
@@ -35,39 +40,45 @@ public class L1DenoisingDescent<T extends RealType<T>>
 
 	@Parameter
 	private OpService ops;
+	@SuppressWarnings("rawtypes")
+	private UnaryFunctionOp<RandomAccessibleInterval[], RandomAccessibleInterval> divComputer;
 
-	private RAIAndRAIToIIParallel<T, T, T> mapperSubtract;
+	private BinaryComputerOp<T, T, T> addComputer;
+
+	private RAIAndRAIToIIParallel<T, T, T> mapper;
 
 	private Converter<T, T> converter;
 
 	@SuppressWarnings("unchecked")
 	public SolverState<T> calculate(SolverState<T> input) {
-		final DualVariables<T> dualVariables = input.getCostFunctionDV();
-		
-		if (mapperSubtract == null) {
+		final DualVariables<T> dualVariables = input.getRegularizerDV();
+
+		if (mapper == null || divComputer == null) {
 			init(dualVariables);
 		}
 
-		mapperSubtract.compute(input.getIntermediateResult(0), Converters.convert(dualVariables.getDualVariable(0), converter, input.getType()),
+		mapper.compute(input.getIntermediateResult(0),
+				Converters.convert(divComputer.calculate(dualVariables.getAllDualVariables()), converter,
+						input.getType()),
 				(IterableInterval<T>) input.getIntermediateResult(0));
-		
+
 		return input;
 	}
 
 	@SuppressWarnings("unchecked")
-	private void init(DualVariables<T> input) {
-		final BinaryComputerOp<T, T, T> subtractComputer = Computers.binary(ops, Ops.Math.Subtract.class,
-				input.getType(), input.getType(), input.getType());
-		mapperSubtract = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
-				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
-		mapperSubtract.setOp(subtractComputer);
-
+	private void init(final DualVariables<T> input) {
+		divComputer = Functions.unary(ops, DefaultDivergence2D.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval[].class);
 		converter = new Converter<T, T>() {
 
 			public void convert(T in, T out) {
 				out.setReal(in.getRealDouble() * stepSize);
 			}
 		};
-	}
+		addComputer = Computers.binary(ops, Ops.Math.Add.class, input.getType(), input.getType(), input.getType());
+		mapper = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
+				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
+		mapper.setOp(addComputer);
 
+	}
 }

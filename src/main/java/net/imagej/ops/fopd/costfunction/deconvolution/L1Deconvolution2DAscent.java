@@ -9,14 +9,15 @@ import net.imagej.ops.fopd.Ascent;
 import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.fopd.helper.DefaultL1Projector;
 import net.imagej.ops.fopd.helper.DefaultL2Norm;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
 import net.imagej.ops.map.MapBinaryInplace1s.IIAndIIParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.computer.UnaryComputerOp;
+import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.function.BinaryFunctionOp;
 import net.imagej.ops.special.function.Functions;
-import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
 import net.imagej.ops.special.inplace.BinaryInplace1Op;
 import net.imagej.ops.special.inplace.Inplaces;
 import net.imglib2.Dimensions;
@@ -39,7 +40,7 @@ import org.scijava.plugin.Plugin;
  */
 @Plugin(type = Ascent.class)
 public class L1Deconvolution2DAscent<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> implements Ascent<T> {
+		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Ascent<T> {
 
 	@Parameter
 	private OpService ops;
@@ -58,7 +59,7 @@ public class L1Deconvolution2DAscent<T extends RealType<T>>
 	private RandomAccessibleInterval<T> norm;
 
 	@SuppressWarnings("rawtypes")
-	private UnaryComputerOp<DualVariables, RandomAccessibleInterval> normComputer;
+	private UnaryComputerOp<RandomAccessibleInterval[], RandomAccessibleInterval> normComputer;
 
 	private IIAndIIParallel<T, T> inplaceMapper;
 
@@ -73,25 +74,24 @@ public class L1Deconvolution2DAscent<T extends RealType<T>>
 	private RandomAccessibleInterval<T> convolution;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
-	}
-
-	@SuppressWarnings("unchecked")
-	public void compute(DualVariables<T> input, RandomAccessibleInterval<T> output) {
+	public SolverState<T> calculate(SolverState<T> input) {
+		final DualVariables<T> dualVariables = input.getCostFunctionDV();
+		
 		if (mapperSubtract == null || mapperAdd == null || diff == null || norm == null || normComputer == null
 				|| inplaceMapper == null || convolver == null) {
-			init(input);
+			init(dualVariables);
 		}
 
-		convolver.compute(padOp.calculate(output, paddedDims), convolution);
+		convolver.compute(padOp.calculate(input.getResultImage(0), paddedDims), convolution);
 
 		mapperSubtract.compute(convolution, f, (IterableInterval<T>) diff);
 
-		mapperAdd.compute(input.getDualVariable(0), diff, (IterableInterval<T>) input.getDualVariable(0));
+		mapperAdd.compute(dualVariables.getDualVariable(0), diff, (IterableInterval<T>) dualVariables.getDualVariable(0));
 
-		normComputer.compute(input, norm);
-		inplaceMapper.mutate1((IterableInterval<T>) input.getDualVariable(0), (IterableInterval<T>) norm);
+		normComputer.compute(dualVariables.getAllDualVariables(), norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(0), (IterableInterval<T>) norm);
+		
+		return input;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -129,7 +129,7 @@ public class L1Deconvolution2DAscent<T extends RealType<T>>
 		diff = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
 
 		norm = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
-		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class, DualVariables.class);
+		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
 		final BinaryInplace1Op<? super T, T, T> projector = Inplaces.binary1(ops, DefaultL1Projector.class,
 				input.getType(), input.getType(), 1);
 		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class, IterableInterval.class, IterableInterval.class,

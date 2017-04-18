@@ -1,11 +1,6 @@
 package net.imagej.ops.fopd.helper;
 
-import org.scijava.Priority;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-
 import net.imagej.ops.OpService;
-import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.special.function.Functions;
 import net.imagej.ops.special.function.UnaryFunctionOp;
 import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
@@ -15,6 +10,10 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
 import net.imglib2.type.numeric.RealType;
 
+import org.scijava.Priority;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+
 /**
  * 3D implementation of {@link Divergence}.
  * 
@@ -23,8 +22,8 @@ import net.imglib2.type.numeric.RealType;
  * @param <T>
  */
 @Plugin(type = Divergence.class, description = "3D Divergence.", priority = Priority.HIGH_PRIORITY)
-public class DefaultDivergence3D<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<DualVariables<T>, RandomAccessibleInterval<T>> implements Divergence<T> {
+public class DefaultDivergence3D<T extends RealType<T>> extends
+		AbstractUnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>> implements Divergence<T> {
 
 	@Parameter
 	private OpService ops;
@@ -48,30 +47,30 @@ public class DefaultDivergence3D<T extends RealType<T>>
 	private UnaryFunctionOp<RandomAccessibleInterval, RandomAccessibleInterval> bdComputerZ;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(DualVariables<T> input) {
-		return (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
+	public RandomAccessibleInterval<T> createOutput(RandomAccessibleInterval<T>[] input) {
+		return (RandomAccessibleInterval<T>) ops.create().img(input[0]);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void compute(DualVariables<T> input, RandomAccessibleInterval<T> output) {
+	public void compute(RandomAccessibleInterval<T>[] input, RandomAccessibleInterval<T> output) {
 		if (bdComputerX == null || bdComputerY == null || bdComputerZ == null) {
 			init(input);
 		}
 
-		add3(bdComputerX.calculate(input.getDualVariable(0)), bdComputerY.calculate(input.getDualVariable(1)),
-				bdComputerZ.calculate(input.getDualVariable(2)), output);
+		add3(bdComputerX.calculate(input[0]), bdComputerY.calculate(input[1]), bdComputerZ.calculate(input[2]), output);
 	}
 
-	private void init(final DualVariables<T> input) {
+	private void init(final RandomAccessibleInterval<T>[] input) {
+		final T type = input[0].randomAccess().get().createVariable();
 		bdComputerX = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
 				RandomAccessibleInterval.class, 0,
-				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(input.getType().createVariable()));
+				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(type));
 		bdComputerY = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
 				RandomAccessibleInterval.class, 1,
-				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(input.getType().createVariable()));
+				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(type));
 		bdComputerZ = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
 				RandomAccessibleInterval.class, 2,
-				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(input.getType().createVariable()));
+				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(type));
 	}
 
 	private void add3(final RandomAccessible<T> source0, final RandomAccessible<T> source1,

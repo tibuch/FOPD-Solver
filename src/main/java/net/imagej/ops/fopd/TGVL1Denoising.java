@@ -4,9 +4,9 @@ import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.CostFunction;
 import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
 import net.imagej.ops.fopd.regularizer.Regularizer;
-import net.imagej.ops.fopd.regularizer.tv.TotalVariation2D;
+import net.imagej.ops.fopd.regularizer.tgv.TGV2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
-import net.imagej.ops.fopd.solver.TVL1DenoisingSolverState;
+import net.imagej.ops.fopd.solver.TGVL1DenoisingSolverState;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
@@ -26,14 +26,17 @@ import org.scijava.plugin.Plugin;
  *
  */
 @Plugin(type = UnaryHybridCF.class)
-public class TVL1Denoising<T extends RealType<T>>
+public class TGVL1Denoising<T extends RealType<T>>
 		extends AbstractUnaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
 
 	@Parameter
 	private OpService ops;
 
 	@Parameter
-	private double lambda;
+	private double alpha;
+
+	@Parameter
+	private double beta;
 
 	@Parameter
 	private int numIt;
@@ -41,12 +44,12 @@ public class TVL1Denoising<T extends RealType<T>>
 	@SuppressWarnings({ "unchecked" })
 	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
 
-		final TotalVariation2D<T> tv = new TotalVariation2D<T>(ops, lambda, 0.25);
+		final TGV2D<T> tgv = new TGV2D<T>(ops, alpha, beta, 0.25);
 		final L1Denoising2D<T> cf = new L1Denoising2D<T>(ops, input, 0.25);
 
-		final TVL1DenoisingSolverState<T> state = new TVL1DenoisingSolverState<T>(ops, input);
+		final TGVL1DenoisingSolverState<T> state = new TGVL1DenoisingSolverState<T>(ops, input);
 
-		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tv, cf, numIt);
+		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tgv, cf, numIt);
 		return solver.calculate(state);
 	}
 }

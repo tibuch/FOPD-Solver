@@ -1,8 +1,9 @@
-package net.imagej.ops.fopd.regularizer;
+package net.imagej.ops.fopd.regularizer.tvhuber;
 
 import net.imagej.ops.OpService;
-import net.imagej.ops.fopd.DualVariables;
-import net.imglib2.RandomAccessibleInterval;
+import net.imagej.ops.fopd.regularizer.AbstractRegularizer;
+import net.imagej.ops.fopd.regularizer.tv.TotalVariation2DDescent;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imglib2.type.numeric.RealType;
 
 /**
@@ -20,8 +21,8 @@ public class TVHuber2D<T extends RealType<T>> extends AbstractRegularizer<T> {
 
 	@SuppressWarnings("unchecked")
 	public TVHuber2D(final OpService ops, final double lambda, final double alpha, final double descentStepSize) {
-		this.ascent = ops.op(TVHuber2DAscent.class, RandomAccessibleInterval.class, DualVariables.class, lambda, alpha);
-		this.descent = ops.op(TotalVariation2DDescent.class, RandomAccessibleInterval.class, DualVariables.class,
+		this.ascent = ops.op(TVHuber2DAscent.class, SolverState.class, lambda, alpha);
+		this.descent = ops.op(TotalVariation2DDescent.class, SolverState.class,
 				descentStepSize);
 	}
 }

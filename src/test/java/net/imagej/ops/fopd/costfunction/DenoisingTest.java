@@ -3,17 +3,19 @@ package net.imagej.ops.fopd.costfunction;
 import static org.junit.Assert.assertEquals;
 
 import net.imagej.ops.fopd.AbstractOpTest;
-import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.fopd.costfunction.denoising.L1DenoisingAscent;
 import net.imagej.ops.fopd.costfunction.denoising.L1DenoisingDescent;
+import net.imagej.ops.fopd.solver.SolverState;
+import net.imagej.ops.fopd.solver.TVL1DenoisingSolverState;
 import net.imglib2.Cursor;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
+import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import org.junit.Test;
 
 /**
+ * Denoising tests.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *
@@ -27,19 +29,25 @@ public class DenoisingTest extends AbstractOpTest {
 	@Test
 	public void l1DenoisingTest() {
 
-		Img<DoubleType> result = ops.create().img(img);
+		final L1DenoisingAscent<DoubleType> ascentL1Denoising = ops.op(L1DenoisingAscent.class, SolverState.class,
+				posNegImg);
+		final L1DenoisingDescent<DoubleType> descentL1Denoising = ops.op(L1DenoisingDescent.class, SolverState.class,
+				0.25);
 
-		final L1DenoisingAscent<DoubleType> ascentL1Denoising = ops.op(L1DenoisingAscent.class,
-				RandomAccessibleInterval.class, DualVariables.class, posNegImg);
-		final L1DenoisingDescent<DoubleType> descentL1Denoising = ops.op(L1DenoisingDescent.class,
-				RandomAccessibleInterval.class, DualVariables.class, 0.25);
+		final SolverState<DoubleType> state = new TVL1DenoisingSolverState<DoubleType>(ops, ops.create().img(img));
+		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
+		Cursor<DoubleType> c = img.cursor();
 
-		final DualVariables<DoubleType> q = new DualVariables<DoubleType>(ops.create().img(img));
+		while (c.hasNext()) {
+			c.next();
+			ra.setPosition(c);
+			ra.get().set(c.get().get());
+		}
 
-		ascentL1Denoising.compute(q, img);
-		descentL1Denoising.compute(q, result);
+		ascentL1Denoising.calculate(state);
+		descentL1Denoising.calculate(state);
 
-		final Cursor<DoubleType> c = result.cursor();
+		c = ((IterableInterval<DoubleType>) state.getIntermediateResult(0)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
 			assertEquals("Total Variation differs", expected[i++], c.next().get(), 0);

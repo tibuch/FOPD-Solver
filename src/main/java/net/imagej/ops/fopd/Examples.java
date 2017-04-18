@@ -29,9 +29,11 @@ public class Examples {
 		ImageJFunctions.show(ex.getNoisyImg());
 		ImageJFunctions.show(ex.denoisingL1TV2D(ex.getNoisyImg(), numIts));
 		ImageJFunctions.show(ex.denoisingL1TVHuber2D(ex.getNoisyImg(), numIts));
+		ImageJFunctions.show(ex.denoisingL1TGV2D(ex.getNoisyImg(), numIts));
 		ImageJFunctions.show(ex.getConvolvedImg());
 		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImg(), ex.getKernel(), numIts));
 		ImageJFunctions.show(ex.deconvolutionL1TVHuber2D(ex.getConvolvedImg(), ex.getKernel(), numIts));
+		ImageJFunctions.show(ex.deconvolutionL1TGV2D(ex.getConvolvedImg(), ex.getKernel(), numIts));
 	}
 
 	public Examples() {
@@ -76,6 +78,18 @@ public class Examples {
 	}
 
 	@SuppressWarnings("unchecked")
+	private Img<FloatType> denoisingL1TGV2D(final Img<FloatType> img, final int numIts) {
+
+		long t = System.currentTimeMillis();
+		final Img<FloatType> result = (Img<FloatType>) ops.run(TGVL1Denoising.class, img, 1.0, 2.0, numIts);
+		t = System.currentTimeMillis() - t;
+		System.out.println(
+				"TGVL1-Denoising [" + img.dimension(0) + ", " + img.dimension(1) + "]: " + t / 1000.0 + "sec");
+		System.out.println("Time/Iteration: " + (double) t / numIts + "millisec");
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
 	private Img<FloatType> deconvolutionL1TV2D(final Img<FloatType> img, final Img<FloatType> kernel,
 			final int numIts) {
 
@@ -87,16 +101,30 @@ public class Examples {
 		System.out.println("Time/Iteration: " + (double) t / numIts + "millisec");
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private Img<FloatType> deconvolutionL1TVHuber2D(final Img<FloatType> img, final Img<FloatType> kernel,
 			final int numIts) {
 
 		long t = System.currentTimeMillis();
-		final Img<FloatType> result = (Img<FloatType>) ops.run(TVHuberL1Deconvolution.class, img, kernel, 0.1, 0.05, numIts);
+		final Img<FloatType> result = (Img<FloatType>) ops.run(TVHuberL1Deconvolution.class, img, kernel, 0.1, 0.05,
+				numIts);
 		t = System.currentTimeMillis() - t;
 		System.out.println(
 				"TVHuberL1-Deconvolution [" + img.dimension(0) + ", " + img.dimension(1) + "]: " + t / 1000.0 + "sec");
+		System.out.println("Time/Iteration: " + (double) t / numIts + "millisec");
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Img<FloatType> deconvolutionL1TGV2D(final Img<FloatType> img, final Img<FloatType> kernel,
+			final int numIts) {
+
+		long t = System.currentTimeMillis();
+		final Img<FloatType> result = (Img<FloatType>) ops.run(TGVL1Deconvolution.class, img, kernel, 0.1, 0.2, numIts);
+		t = System.currentTimeMillis() - t;
+		System.out.println(
+				"TGVL1-Deconvolution [" + img.dimension(0) + ", " + img.dimension(1) + "]: " + t / 1000.0 + "sec");
 		System.out.println("Time/Iteration: " + (double) t / numIts + "millisec");
 		return result;
 	}

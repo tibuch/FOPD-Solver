@@ -2,25 +2,21 @@ package net.imagej.ops.fopd.solver;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.DualVariables;
+import net.imagej.ops.fopd.regularizer.tgv.solver.TGVMinimizer2DSolverState;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
 /**
- * Specific implementation of {@link SolverState} for L1-TVHuber-Denoising.
+ * Specific implementation of {@link SolverState} for L1-TV-Denoising.
  * 
- * Energy: E(u) = lambda * TV-Huber(u)_alpha + |u - f|_1, where u is the
- * denoised solution, lambda is the smoothness weight and f is the observed
- * image.
+ * Energy: E(u) = lambda * TV(u) + |u - f|_1, where u is the denoised solution,
+ * lambda is the smoothness weight and f is the observed image.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz.
  *
  * @param <T>
  */
-public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements SolverState<T> {
-
-	private RandomAccessibleInterval<T> image;
-
-	private RandomAccessibleInterval<T> result;
+public class TGVL1DenoisingSolverState<T extends RealType<T>> implements SolverState<T> {
 
 	private DualVariables<T> regularizerDV;
 
@@ -28,9 +24,14 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 
 	private RandomAccessibleInterval<T> tmp;
 
+	private RandomAccessibleInterval<T> result;
+	
+	private TGVMinimizer2DSolverState<T> tgvState;
+
+	private T type;
+
 	@SuppressWarnings("unchecked")
-	public TVHuberL1DenoisingSolverState(final OpService ops, final RandomAccessibleInterval<T> image) {
-		this.image = image;
+	public TGVL1DenoisingSolverState(final OpService ops, final RandomAccessibleInterval<T> image) {
 
 		this.regularizerDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image),
 				(RandomAccessibleInterval<T>) ops.create().img(image));
@@ -38,8 +39,10 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 
 		this.tmp = (RandomAccessibleInterval<T>) ops.create().img(image);
 		this.result = (RandomAccessibleInterval<T>) ops.create().img(image);
+		this.tgvState = new TGVMinimizer2DSolverState<T>(ops, image);
+		this.type = image.randomAccess().get().createVariable();
 	}
-
+	
 	public RandomAccessibleInterval<T> getResultImage(final int i) {
 		if (i != 0) {
 			throw new ArrayIndexOutOfBoundsException("Only one result available.");
@@ -56,7 +59,7 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 	}
 
 	public T getType() {
-		return image.randomAccess().get().createVariable();
+		return this.type;
 	}
 
 	public RandomAccessibleInterval<T> getIntermediateResult(final int i) {
@@ -67,7 +70,10 @@ public class TVHuberL1DenoisingSolverState<T extends RealType<T>> implements Sol
 	}
 
 	public SolverState<T> getSubSolverState(int i) {
-		throw new NullPointerException("This denoising solver does not depend on another solver.");
+		if (i > 0) {
+			throw new ArrayIndexOutOfBoundsException("This solver only depends on one other sovler.");
+		}
+		return tgvState;
 	}
 
 	public int numResultImages() {

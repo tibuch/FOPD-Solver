@@ -1,8 +1,8 @@
-package net.imagej.ops.fopd.regularizer;
+package net.imagej.ops.fopd.regularizer.tv;
 
 import net.imagej.ops.OpService;
-import net.imagej.ops.fopd.DualVariables;
-import net.imglib2.RandomAccessibleInterval;
+import net.imagej.ops.fopd.regularizer.AbstractRegularizer;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imglib2.type.numeric.RealType;
 
 /**
@@ -21,8 +21,8 @@ public class TotalVariation2D<T extends RealType<T>> extends AbstractRegularizer
 
 	@SuppressWarnings("unchecked")
 	public TotalVariation2D(final OpService ops, final double lambda, final double descentStepSize) {
-		this.ascent = ops.op(TotalVariation2DAscent.class, RandomAccessibleInterval.class, DualVariables.class, lambda);
-		this.descent = ops.op(TotalVariation2DDescent.class, RandomAccessibleInterval.class, DualVariables.class,
+		this.ascent = ops.op(TotalVariation2DAscent.class, SolverState.class, lambda);
+		this.descent = ops.op(TotalVariation2DDescent.class, SolverState.class,
 				descentStepSize);
 	}
 }
