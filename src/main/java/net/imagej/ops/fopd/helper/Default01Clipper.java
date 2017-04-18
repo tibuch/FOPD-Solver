@@ -1,10 +1,10 @@
 package net.imagej.ops.fopd.helper;
 
-import org.scijava.plugin.Plugin;
-
 import net.imagej.ops.special.inplace.AbstractUnaryInplaceOp;
 import net.imagej.ops.special.inplace.UnaryInplaceOp;
 import net.imglib2.type.numeric.RealType;
+
+import org.scijava.plugin.Plugin;
 
 /**
  * Implementation of {@link MinMaxClipper} which clips to 0 and 1.

@@ -27,10 +27,9 @@ public class DualVariables<T extends RealType<T>> {
 	public RandomAccessibleInterval<T> getDualVariable(final int i) {
 		if (i <= numVariables) {
 			return dualVariables[i];
-		} else {
-			throw new ArrayIndexOutOfBoundsException(
-					"Only " + numVariables + " dual variables are available. Dual variable " + i + " was requested.");
 		}
+		throw new ArrayIndexOutOfBoundsException(
+				"Only " + numVariables + " dual variables are available. Dual variable " + i + " was requested.");
 	}
 
 	public T getType() {
@@ -41,7 +40,7 @@ public class DualVariables<T extends RealType<T>> {
 		return this.numVariables;
 	}
 
-	public RandomAccessibleInterval<T>[] getAllDUalVariables() {
+	public RandomAccessibleInterval<T>[] getAllDualVariables() {
 		return this.dualVariables;
 	}
 }

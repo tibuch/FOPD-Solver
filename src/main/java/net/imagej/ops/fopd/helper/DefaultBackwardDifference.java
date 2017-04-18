@@ -1,9 +1,5 @@
 package net.imagej.ops.fopd.helper;
 
-import org.scijava.Priority;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-
 import net.imagej.ops.OpService;
 import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
 import net.imglib2.FinalInterval;
@@ -14,6 +10,10 @@ import net.imglib2.outofbounds.OutOfBoundsFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+
+import org.scijava.Priority;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
 
 /**
  * Implementation of {@link BackwardDifference} for the given dimension d.
@@ -28,7 +28,7 @@ public class DefaultBackwardDifference<T extends RealType<T>>
 		implements BackwardDifference<T> {
 
 	@Parameter
-	private int d;
+	private int dimension;
 	
 	@Parameter
 	private OutOfBoundsFactory<T, RandomAccessibleInterval<T>> fac;
@@ -54,7 +54,7 @@ public class DefaultBackwardDifference<T extends RealType<T>>
 
 		gradientBackwardDifference(
 				Views.interval(Views.extend(input, fac), interval), output,
-				d);
+				dimension);
 
 	}
 	
@@ -73,7 +73,7 @@ public class DefaultBackwardDifference<T extends RealType<T>>
 		input.min(min);
 		input.max(max);
 
-		min[d] -= 1;
+		min[dimension] -= 1;
 		
 		interval = new FinalInterval(min, max);
 	}
@@ -90,11 +90,11 @@ public class DefaultBackwardDifference<T extends RealType<T>>
 	 *            gradient image plus a one pixel border in dimension.
 	 * @param gradient
 	 *            output image
-	 * @param dimension
+	 * @param dim
 	 *            along which dimension the partial derivatives are computed
 	 */
 	private void gradientBackwardDifference(final RandomAccessible<T> source,
-			final RandomAccessibleInterval<T> gradient, final int dimension) {
+			final RandomAccessibleInterval<T> gradient, final int dim) {
 		final int n = gradient.numDimensions();
 
 		final long[] min = new long[n];
@@ -106,12 +106,12 @@ public class DefaultBackwardDifference<T extends RealType<T>>
 			shiftback[d] = min[d] - max[d];
 
 		final RandomAccess<T> result = gradient.randomAccess();
-		final RandomAccess<T> back = source.randomAccess(Intervals.translate(gradient, 1, dimension));
+		final RandomAccess<T> back = source.randomAccess(Intervals.translate(gradient, 1, dim));
 		final RandomAccess<T> current = source.randomAccess(gradient);
 
 		result.setPosition(min);
 		back.setPosition(min);
-		back.bck(dimension);
+		back.bck(dim);
 		current.setPosition(min);
 
 		final long max0 = max[0];
