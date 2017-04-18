@@ -25,7 +25,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 /**
- * L1-Deconvolution with known kernel of one 2D image: {@link Ascent} Step.
+ * L1-Norm as costfunction of one 2D image: {@link Ascent} Step.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *

@@ -8,10 +8,9 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
 /**
- * Deconvolution with L1-Norm of one 2D image.
+ * L1-Norm as costfunction. 
  * 
- * costfunction: |k*u - f|_1, where u is the solution, f is the noisy
- * observation, k the known kernel and * denotes the convolution operator.
+ * Ref.: http://mathworld.wolfram.com/L1-Norm.html
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  *
