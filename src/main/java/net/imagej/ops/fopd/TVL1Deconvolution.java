@@ -6,7 +6,7 @@ import net.imagej.ops.fopd.costfunction.deconvolution.L1Deconvolution2D;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tv.TotalVariation2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
-import net.imagej.ops.fopd.solver.TVL1Deconvolution2DSolverState;
+import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.special.function.AbstractBinaryFunctionOp;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
@@ -49,7 +49,7 @@ public class TVL1Deconvolution<T extends RealType<T>> extends
 		final L1Deconvolution2D<T> cf = new L1Deconvolution2D<T>(ops, image, kernel,
 				Views.invertAxis(Views.invertAxis(flippedKernel, 0), 1), 0.2);
 
-		final TVL1Deconvolution2DSolverState<T> state = new TVL1Deconvolution2DSolverState<T>(ops, image);
+		final DefaultSolverState<T> state = new DefaultSolverState<T>(ops, image);
 
 		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tv, cf, numIt);
 		solver.calculate(state);
