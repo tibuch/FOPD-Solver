@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2DAscent;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2DDescent;
+import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.fopd.solver.SolverState;
-import net.imagej.ops.fopd.solver.TVL1DenoisingSolverState;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -32,7 +32,7 @@ public class TVHuberTest extends AbstractOpTest {
 		final TVHuber2DAscent<DoubleType> ascentTVHuber = ops.op(TVHuber2DAscent.class, SolverState.class, 0.5, 0.1);
 		final TVHuber2DDescent<DoubleType> descentTVHuber = ops.op(TVHuber2DDescent.class, SolverState.class, 0.25);
 
-		final SolverState<DoubleType> state = new TVL1DenoisingSolverState<DoubleType>(ops, ops.create().img(img));
+		final SolverState<DoubleType> state = new DefaultSolverState<DoubleType>(ops, ops.create().img(img));
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img.cursor();
 

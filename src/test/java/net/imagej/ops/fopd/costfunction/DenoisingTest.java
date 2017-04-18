@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.costfunction.denoising.L1DenoisingAscent;
 import net.imagej.ops.fopd.costfunction.denoising.L1DenoisingDescent;
+import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.fopd.solver.SolverState;
-import net.imagej.ops.fopd.solver.TVL1DenoisingSolverState;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -34,7 +34,7 @@ public class DenoisingTest extends AbstractOpTest {
 		final L1DenoisingDescent<DoubleType> descentL1Denoising = ops.op(L1DenoisingDescent.class, SolverState.class,
 				0.25);
 
-		final SolverState<DoubleType> state = new TVL1DenoisingSolverState<DoubleType>(ops, ops.create().img(img));
+		final SolverState<DoubleType> state = new DefaultSolverState<DoubleType>(ops, ops.create().img(img));
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img.cursor();
 

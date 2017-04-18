@@ -6,7 +6,7 @@ import net.imagej.ops.fopd.costfunction.denoising.L1Denoising2D;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2D;
 import net.imagej.ops.fopd.solver.DefaultSolver;
-import net.imagej.ops.fopd.solver.TVHuberL1DenoisingSolverState;
+import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
@@ -44,7 +44,7 @@ public class TVHuberL1Denoising<T extends RealType<T>>
 	@SuppressWarnings({ "unchecked" })
 	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
 
-		final TVHuberL1DenoisingSolverState<T> state = new TVHuberL1DenoisingSolverState<T>(ops,
+		final DefaultSolverState<T> state = new DefaultSolverState<T>(ops,
 				input);
 
 		final TVHuber2D<T> tv = new TVHuber2D<T>(ops, lambda, alpha, 0.25);
