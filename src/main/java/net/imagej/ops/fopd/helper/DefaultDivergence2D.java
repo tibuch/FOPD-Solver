@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.helper;
 
 import net.imagej.ops.OpService;
@@ -18,12 +19,14 @@ import org.scijava.plugin.Plugin;
  * 2D implementation of {@link Divergence}.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
-@Plugin(type = Divergence.class, description = "2D Divergence.", priority = Priority.HIGH_PRIORITY)
+@Plugin(type = Divergence.class, description = "2D Divergence.",
+	priority = Priority.HIGH_PRIORITY)
 public class DefaultDivergence2D<T extends RealType<T>> extends
-		AbstractUnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>> implements Divergence<T> {
+	AbstractUnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>>
+	implements Divergence<T>
+{
 
 	@Parameter
 	private OpService ops;
@@ -41,30 +44,39 @@ public class DefaultDivergence2D<T extends RealType<T>> extends
 	private UnaryFunctionOp<RandomAccessibleInterval, RandomAccessibleInterval> bdComputerY;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(RandomAccessibleInterval<T>[] input) {
+	public RandomAccessibleInterval<T> createOutput(
+		RandomAccessibleInterval<T>[] input)
+	{
 		return (RandomAccessibleInterval<T>) ops.create().img(input[0]);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void compute(RandomAccessibleInterval<T>[] input, RandomAccessibleInterval<T> output) {
+	public void compute(RandomAccessibleInterval<T>[] input,
+		RandomAccessibleInterval<T> output)
+	{
 		if (bdComputerX == null || bdComputerY == null) {
 			init2(input);
 		}
-		add2(bdComputerX.calculate(input[0]), bdComputerY.calculate(input[1]), output);
+		add2(bdComputerX.calculate(input[0]), bdComputerY.calculate(input[1]),
+			output);
 	}
 
 	private void init2(final RandomAccessibleInterval<T>[] input) {
 		final T type = input[0].randomAccess().get().createVariable();
-		bdComputerX = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 0,
-				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(type));
-		bdComputerY = Functions.unary(ops, DefaultBackwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 1,
-				new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(type));
+		bdComputerX = Functions.unary(ops, DefaultBackwardDifference.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 0,
+			new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(
+				type));
+		bdComputerY = Functions.unary(ops, DefaultBackwardDifference.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 1,
+			new OutOfBoundsConstantValueFactory<T, RandomAccessibleInterval<T>>(
+				type));
 	}
 
-	private void add2(final RandomAccessible<T> source0, final RandomAccessible<T> source1,
-			final RandomAccessibleInterval<T> output) {
+	private void add2(final RandomAccessible<T> source0,
+		final RandomAccessible<T> source1,
+		final RandomAccessibleInterval<T> output)
+	{
 		final int n = source0.numDimensions();
 
 		final long[] min = new long[n];
@@ -95,8 +107,7 @@ public class DefaultDivergence2D<T extends RealType<T>> extends
 			// check dimension 0 separately to avoid the loop over d in most
 			// iterations
 			if (result.getLongPosition(0) == max0) {
-				if (n == 1)
-					return;
+				if (n == 1) return;
 				result.move(shiftback[0], 0);
 				s1.move(shiftback[0], 0);
 				s2.move(shiftback[0], 0);
@@ -106,15 +117,16 @@ public class DefaultDivergence2D<T extends RealType<T>> extends
 						result.move(shiftback[d], d);
 						s1.move(shiftback[d], d);
 						s2.move(shiftback[d], d);
-						if (d == n - 1)
-							return;
-					} else {
+						if (d == n - 1) return;
+					}
+					else {
 						result.fwd(d);
 						s1.fwd(d);
 						s2.fwd(d);
 						break;
 					}
-			} else {
+			}
+			else {
 				result.fwd(0);
 				s1.fwd(0);
 				s2.fwd(0);

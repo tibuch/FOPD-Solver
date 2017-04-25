@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.helper;
 
 import static org.junit.Assert.assertEquals;
@@ -15,23 +16,27 @@ import org.junit.Test;
  * Test for {@link DefaultForwardDifference}.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  */
 public class ForwardDifferenceTest extends AbstractOpTest {
 
-	private static double[] forwardDifferenceX = new double[] { -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 1.0, 0.0 };
+	private static double[] forwardDifferenceX = new double[] { -1.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, -1.0, 1.0, 0.0 };
 
-	private static double[] forwardDifferenceY = new double[] { 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0 };
+	private static double[] forwardDifferenceY = new double[] { 0.0, 1.0, 0.0,
+		0.0, -1.0, 0.0, 0.0, 0.0, 0.0 };
 
 	@Test
 	public void forwardDifferenceXTest() {
 
 		@SuppressWarnings("unchecked")
-		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 0,
-				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>())).cursor();
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
+			DefaultForwardDifference.class, img, 0,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
+				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("GradientX differs", forwardDifferenceX[i++], c.next().get(), 0);
+			assertEquals("GradientX differs", forwardDifferenceX[i++], c.next()
+				.get(), 0);
 		}
 	}
 
@@ -39,11 +44,14 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 	public void forwardDifferenceYTest() {
 
 		@SuppressWarnings("unchecked")
-		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(DefaultForwardDifference.class, img, 1,
-				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>())).cursor();
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
+			DefaultForwardDifference.class, img, 1,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
+				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("GradientY differs", forwardDifferenceY[i++], c.next().get(), 0);
+			assertEquals("GradientY differs", forwardDifferenceY[i++], c.next()
+				.get(), 0);
 		}
 	}
 }

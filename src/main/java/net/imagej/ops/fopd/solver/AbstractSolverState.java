@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.solver;
 
 import net.imagej.ops.OpService;
@@ -5,6 +6,13 @@ import net.imagej.ops.fopd.DualVariables;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
+/**
+ * Abstract implementation of {@link SolverState}.
+ * 
+ * @author Tim-Oliver Buchholz, University of Konstanz
+ *
+ * @param <T>
+ */
 public class AbstractSolverState<T extends RealType<T>> implements SolverState<T> {
 
 	protected DualVariables<T> regularizerDV;
@@ -12,22 +20,28 @@ public class AbstractSolverState<T extends RealType<T>> implements SolverState<T
 	protected RandomAccessibleInterval<T>[] intermediateResults;
 	protected RandomAccessibleInterval<T>[] results;
 	protected T type;
+	protected int numViews;
 
 	@SuppressWarnings("unchecked")
-	public AbstractSolverState(final OpService ops, final RandomAccessibleInterval<T> image) {
-		this.regularizerDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image),
-				(RandomAccessibleInterval<T>) ops.create().img(image));
-		this.costFunctionDV = new DualVariables<T>((RandomAccessibleInterval<T>) ops.create().img(image));
+	public AbstractSolverState(final OpService ops, final RandomAccessibleInterval<T>[] images, final int numResults) {
+		this.regularizerDV = new DualVariables<T>(ops, images[0], numResults * images[0].numDimensions());
+		this.costFunctionDV = new DualVariables<T>(ops, images[0], images.length);
+		this.numViews = images.length;
 
-		this.intermediateResults = new RandomAccessibleInterval[]{ ops.create().img(image) };
-		this.results = new RandomAccessibleInterval[]{ ops.create().img(image) };
-		this.type = image.randomAccess().get().createVariable();
+		this.intermediateResults = new RandomAccessibleInterval[numResults];
+		this.results = new RandomAccessibleInterval[numResults];
+
+		for (int i = 0; i < numResults; i++) {
+			intermediateResults[i] = (RandomAccessibleInterval<T>) ops.create().img(images[0]);
+			results[i] = (RandomAccessibleInterval<T>) ops.create().img(images[0]);
+		}
+
+		this.type = images[0].randomAccess().get().createVariable();
 	}
 
 	public RandomAccessibleInterval<T> getResultImage(final int i) {
 		if (i >= results.length) {
-			throw new ArrayIndexOutOfBoundsException(
-					"This solver has only " + results.length + " results.");
+			throw new ArrayIndexOutOfBoundsException("This solver has only " + results.length + " results.");
 		}
 		return this.results[0];
 	}
@@ -54,6 +68,10 @@ public class AbstractSolverState<T extends RealType<T>> implements SolverState<T
 
 	public SolverState<T> getSubSolverState(int i) {
 		throw new ArrayIndexOutOfBoundsException("This solver has no sub-solver.");
+	}
+
+	public int getNumViews() {
+		return this.numViews;
 	}
 
 	public int numResultImages() {

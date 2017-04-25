@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.regularizer.tv;
 
 import net.imagej.ops.OpService;
@@ -28,7 +29,6 @@ import org.scijava.plugin.Plugin;
  * Note: Is the same for TV and TV-Huber.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 @Plugin(type = Descent.class)
@@ -57,8 +57,8 @@ public abstract class AbstractTV2DDescent<T extends RealType<T>>
 			init(dualVariables);
 		}
 
-		mapper.compute(input.getIntermediateResult(0),
-				Converters.convert(divComputer.calculate(dualVariables.getAllDualVariables()), converter, input.getType()),
+		mapper.compute(input.getIntermediateResult(0), Converters
+				.convert(divComputer.calculate(dualVariables.getAllDualVariables()), converter, input.getType()),
 				(IterableInterval<T>) input.getIntermediateResult(0));
 		return input;
 	}

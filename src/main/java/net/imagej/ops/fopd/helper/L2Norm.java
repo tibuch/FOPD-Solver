@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.helper;
 
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
@@ -13,7 +14,6 @@ import net.imglib2.type.numeric.RealType;
  * http://mathworld.wolfram.com/L2-Norm.html
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 public interface L2Norm<T extends RealType<T>>

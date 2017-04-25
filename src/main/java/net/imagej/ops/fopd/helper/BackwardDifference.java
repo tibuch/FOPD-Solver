@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.helper;
 
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
@@ -13,7 +14,6 @@ import net.imglib2.type.Type;
  * Resource. http://mathworld.wolfram.com/BackwardDifference.html
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 public interface BackwardDifference<T extends Type<T>>

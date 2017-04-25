@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.solver;
 
 import net.imagej.ops.OpService;
@@ -5,6 +6,7 @@ import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
 import net.imagej.ops.fopd.helper.Default01Clipper;
 import net.imagej.ops.fopd.regularizer.Regularizer;
+import net.imagej.ops.fopd.regularizer.tgv.TGV2D;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndIIToRAIParallel;
 import net.imagej.ops.map.MapIIInplaceParallel;
 import net.imagej.ops.special.computer.BinaryComputerOp;
@@ -26,15 +28,18 @@ import org.scijava.plugin.Plugin;
  * This {@link Solver} is an implementation of the algorithm proposed by:
  * Chambolle, Antonin, and Thomas Pock.
  * "A first-order primal-dual algorithm for convex problems with applications to imaging."
- * Journal of Mathematical Imaging and Vision 40.1 (2011): 120-145.
+ * Journal of Mathematical Imaging and Vision 40.1 (2011): 120-145 for multiple results.
+ * 
+ * Needed in {@link TGV2D}.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 @Plugin(type = Solver.class)
-public class RegularizerSolver<T extends RealType<T>>
-		extends AbstractUnaryFunctionOp<SolverState<T>, RandomAccessibleInterval<T>> implements Solver<T> {
+public class RegularizerSolver<T extends RealType<T>> extends
+	AbstractUnaryFunctionOp<SolverState<T>, RandomAccessibleInterval<T>>
+	implements Solver<T>
+{
 
 	@Parameter
 	private Regularizer<T> regularizer;
@@ -65,34 +70,45 @@ public class RegularizerSolver<T extends RealType<T>>
 	@SuppressWarnings("unchecked")
 	public RandomAccessibleInterval<T> calculate(SolverState<T> input) {
 
-		if (mapperSubtract == null || copyComputer == null || converter == null || clipperMapper == null) {
+		if (mapperSubtract == null || copyComputer == null ||
+			converter == null || clipperMapper == null)
+		{
 			initComputers(input);
 		}
 
 		// only needed because of a matcher bug.
-		final RandomAccessibleInterval<T> tmp = (RandomAccessibleInterval<T>) ops.create()
-				.img(input.getIntermediateResult(0));
+		final RandomAccessibleInterval<T> tmp =
+			(RandomAccessibleInterval<T>) ops.create().img(input
+				.getIntermediateResult(0));
 
 		for (int i = 0; i < numIterations; i++) {
 
 			regularizer.getAscent().calculate(input);
-			for (int j = 0; j < input.getSubSolverState(0).numIntermediateResults(); j++) {
-				copyComputer.compute(input.getSubSolverState(0).getIntermediateResult(j),
-						input.getSubSolverState(0).getResultImage(j));
+			for (int j = 0; j < input.getSubSolverState(0)
+				.numIntermediateResults(); j++)
+			{
+				copyComputer.compute(input.getSubSolverState(0)
+					.getIntermediateResult(j), input.getSubSolverState(0)
+						.getResultImage(j));
 			}
 			regularizer.getDescent().calculate(input);
 
-			for (int j = 0; j < input.getSubSolverState(0).numIntermediateResults(); j++) {
+			for (int j = 0; j < input.getSubSolverState(0)
+				.numIntermediateResults(); j++)
+			{
 				// mapperSubtract.compute(2*u, uq, uq) does not work, because
 				// wrong
 				// map is chosen later on.
-				mapperSubtract.compute(
-						Converters.convert(input.getSubSolverState(0).getIntermediateResult(j), converter,
-								input.getRegularizerDV().getType()),
-						(IterableInterval<T>) input.getSubSolverState(0).getResultImage(j), tmp);
+				mapperSubtract.compute(Converters.convert(input
+					.getSubSolverState(0).getIntermediateResult(j), converter,
+					input.getRegularizerDV().getType()),
+					(IterableInterval<T>) input.getSubSolverState(0)
+						.getResultImage(j), tmp);
 
-				copyComputer.compute(tmp, input.getSubSolverState(0).getResultImage(j));
-				clipperMapper.mutate((IterableInterval<T>) input.getSubSolverState(0).getResultImage(j));
+				copyComputer.compute(tmp, input.getSubSolverState(0)
+					.getResultImage(j));
+				clipperMapper.mutate((IterableInterval<T>) input
+					.getSubSolverState(0).getResultImage(j));
 			}
 		}
 		return input.getSubSolverState(0).getResultImage(0);
@@ -102,11 +118,14 @@ public class RegularizerSolver<T extends RealType<T>>
 	private void initComputers(final SolverState<T> input) {
 		final T type = input.getType();
 
-		mapperSubtract = (RAIAndIIToRAIParallel<T, T, T>) ops.op(Map.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, IterableInterval.class, BinaryComputerOp.class);
-		mapperSubtract.setOp(Computers.binary(ops, Ops.Math.Subtract.class, type, type, type));
+		mapperSubtract = (RAIAndIIToRAIParallel<T, T, T>) ops.op(Map.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class,
+			IterableInterval.class, BinaryComputerOp.class);
+		mapperSubtract.setOp(Computers.binary(ops, Ops.Math.Subtract.class,
+			type, type, type));
 
-		copyComputer = Computers.unary(ops, Ops.Copy.RAI.class, input.getResultImage(0), input.getResultImage(0));
+		copyComputer = Computers.unary(ops, Ops.Copy.RAI.class, input
+			.getResultImage(0), input.getResultImage(0));
 
 		converter = new Converter<T, T>() {
 
@@ -116,7 +135,9 @@ public class RegularizerSolver<T extends RealType<T>>
 
 		};
 
-		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class, IterableInterval.class, UnaryInplaceOp.class);
-		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops, Default01Clipper.class, type));
+		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class,
+			IterableInterval.class, UnaryInplaceOp.class);
+		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops,
+			Default01Clipper.class, type));
 	}
 }

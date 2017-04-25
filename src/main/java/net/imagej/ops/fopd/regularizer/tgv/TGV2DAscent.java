@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.regularizer.tgv;
 
 import net.imagej.ops.OpService;
@@ -36,12 +37,13 @@ import org.scijava.plugin.Plugin;
  * Total Generalized Variation of one 2D image: {@link Ascent} Step.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 @Plugin(type = Ascent.class)
-public class TGV2DAscent<T extends RealType<T>>
-		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Ascent<T> {
+public class TGV2DAscent<T extends RealType<T>> extends
+	AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements
+	Ascent<T>
+{
 
 	/**
 	 * The OpService.
@@ -84,15 +86,17 @@ public class TGV2DAscent<T extends RealType<T>>
 	private UnaryFunctionOp<RandomAccessibleInterval, RandomAccessibleInterval> gradientY;
 
 	/**
-	 * Holds difference between current gradientX(resultImage) and the first result of the {@link TGVMinimizer2D}.
+	 * Holds difference between current gradientX(resultImage) and the first
+	 * result of the {@link TGVMinimizer2D}.
 	 */
 	private IterableInterval<T> diff0;
-	
+
 	/**
-	 * Holds difference between current gradientY(resultImage) and the second result of the {@link TGVMinimizer2D}.
+	 * Holds difference between current gradientY(resultImage) and the second
+	 * result of the {@link TGVMinimizer2D}.
 	 */
 	private IterableInterval<T> diff1;
-	
+
 	/**
 	 * Solver of the {@link TGVMinimizer2D} which has to do one iteration.
 	 */
@@ -129,53 +133,58 @@ public class TGV2DAscent<T extends RealType<T>>
 	 */
 	private RAIAndRAIToIIParallel<T, T, T> mapperSubtract;
 
-
 	@SuppressWarnings("unchecked")
 	public SolverState<T> calculate(final SolverState<T> input) {
 		final DualVariables<T> dualVariables = input.getRegularizerDV();
 
-		if (gradientX == null || gradientY == null || mapperAdd == null || norm == null) {
+		if (gradientX == null || gradientY == null || mapperAdd == null ||
+			norm == null)
+		{
 			init(input);
 		}
 
-		mapperSubtract.compute(gradientX.calculate(input.getResultImage(0)), input.getSubSolverState(0).getResultImage(0),
-				diff0);
+		mapperSubtract.compute(gradientX.calculate(input.getResultImage(0)),
+			input.getSubSolverState(0).getResultImage(0), diff0);
 
-		mapperAdd.compute(dualVariables.getDualVariable(0),
-				Converters.convert((RandomAccessibleInterval<T>)diff0, c1, input.getType()),
-				(IterableInterval<T>) dualVariables.getDualVariable(0));
-		
-		mapperSubtract.compute(gradientY.calculate(input.getResultImage(0)), input.getSubSolverState(0).getResultImage(1),
-				diff1);
+		mapperAdd.compute(dualVariables.getDualVariable(0), Converters.convert(
+			(RandomAccessibleInterval<T>) diff0, c1, input.getType()),
+			(IterableInterval<T>) dualVariables.getDualVariable(0));
 
-		mapperAdd.compute(
-				dualVariables.getDualVariable(1), Converters
-						.convert((RandomAccessibleInterval<T>)diff1, c2, input.getType()),
-				(IterableInterval<T>) dualVariables.getDualVariable(1));
+		mapperSubtract.compute(gradientY.calculate(input.getResultImage(0)),
+			input.getSubSolverState(0).getResultImage(1), diff1);
+
+		mapperAdd.compute(dualVariables.getDualVariable(1), Converters.convert(
+			(RandomAccessibleInterval<T>) diff1, c2, input.getType()),
+			(IterableInterval<T>) dualVariables.getDualVariable(1));
 
 		normComputer.compute(dualVariables.getAllDualVariables(), norm);
 
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(0), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(1), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
+			.getDualVariable(0), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
+			.getDualVariable(1), (IterableInterval<T>) norm);
 
 		tgvSolver.calculate(input);
-		
+
 		return input;
 	}
 
 	@SuppressWarnings("unchecked")
 	private void init(final SolverState<T> input) {
 		final DualVariables<T> dualVariables = input.getRegularizerDV();
-		norm = (RandomAccessibleInterval<T>) ops.create().img(dualVariables.getDualVariable(0));
-		diff0 = (IterableInterval<T>) ops.create().img(dualVariables.getDualVariable(0));
-		diff1 = (IterableInterval<T>) ops.create().img(dualVariables.getDualVariable(0));
+		norm = (RandomAccessibleInterval<T>) ops.create().img(dualVariables
+			.getDualVariable(0));
+		diff0 = (IterableInterval<T>) ops.create().img(dualVariables
+			.getDualVariable(0));
+		diff1 = (IterableInterval<T>) ops.create().img(dualVariables
+			.getDualVariable(0));
 
-		gradientX = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 0,
-				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
-		gradientY = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 1,
-				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		gradientX = Functions.unary(ops, DefaultForwardDifference.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 0,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		gradientY = Functions.unary(ops, DefaultForwardDifference.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 1,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
 
 		c1 = new Converter<T, T>() {
 
@@ -191,27 +200,34 @@ public class TGV2DAscent<T extends RealType<T>>
 			}
 		};
 
-		final BinaryComputerOp<T, T, T> addComputer = Computers.binary(ops, Ops.Math.Add.class, input.getType(),
-				input.getType(), input.getType());
+		final BinaryComputerOp<T, T, T> addComputer = Computers.binary(ops,
+			Ops.Math.Add.class, input.getType(), input.getType(), input
+				.getType());
 
-		mapperAdd = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
-				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
+		mapperAdd = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class,
+			IterableInterval.class, RandomAccessibleInterval.class,
+			RandomAccessibleInterval.class, BinaryComputerOp.class);
 		mapperAdd.setOp(addComputer);
 
-		final BinaryComputerOp<T, T, T> subtractComputer = Computers.binary(ops, Ops.Math.Subtract.class,
-				input.getType(), input.getType(), input.getType());
+		final BinaryComputerOp<T, T, T> subtractComputer = Computers.binary(ops,
+			Ops.Math.Subtract.class, input.getType(), input.getType(), input
+				.getType());
 
-		mapperSubtract = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
-				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
+		mapperSubtract = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class,
+			IterableInterval.class, RandomAccessibleInterval.class,
+			RandomAccessibleInterval.class, BinaryComputerOp.class);
 		mapperSubtract.setOp(subtractComputer);
 
-		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class, IterableInterval.class, IterableInterval.class,
-				BinaryInplace1Op.class);
+		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class,
+			IterableInterval.class, IterableInterval.class,
+			BinaryInplace1Op.class);
 
-		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
-		inplaceMapper.setOp((BinaryInplace1Op<T, T, T>) Inplaces.binary1(ops, DefaultL1Projector.class,
-				input.getType(), input.getType(), alpha));
-		
-		tgvSolver = ops.op(RegularizerSolver.class, input.getSubSolverState(0), new TGVMinimizer2D<T>(ops, beta, 1/5.0), 1);
+		normComputer = Computers.unary(ops, DefaultL2Norm.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
+		inplaceMapper.setOp((BinaryInplace1Op<T, T, T>) Inplaces.binary1(ops,
+			DefaultL1Projector.class, input.getType(), input.getType(), alpha));
+
+		tgvSolver = ops.op(RegularizerSolver.class, input.getSubSolverState(0),
+			new TGVMinimizer2D<T>(ops, beta, 1 / 5.0), 1);
 	}
 }

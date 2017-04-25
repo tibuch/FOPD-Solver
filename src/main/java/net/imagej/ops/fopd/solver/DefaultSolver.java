@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.solver;
 
 import net.imagej.ops.OpService;
@@ -30,7 +31,6 @@ import org.scijava.plugin.Plugin;
  * Journal of Mathematical Imaging and Vision 40.1 (2011): 120-145.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 @Plugin(type = Solver.class)

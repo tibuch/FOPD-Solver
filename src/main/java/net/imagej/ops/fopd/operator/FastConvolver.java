@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.operator;
 
 import net.imagej.ops.OpService;
@@ -22,12 +23,13 @@ import org.scijava.plugin.Plugin;
  * Fast convolver which holds an initiated computer with a set kernel.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanzf
- *
  * @param <T>
  */
 @Plugin(type = LinearOperator.class)
 public class FastConvolver<T extends RealType<T>> extends
-		AbstractUnaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> implements LinearOperator<T> {
+	AbstractUnaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>>
+	implements LinearOperator<T>
+{
 
 	@Parameter
 	private RandomAccessibleInterval<T> kernel;
@@ -45,8 +47,12 @@ public class FastConvolver<T extends RealType<T>> extends
 
 	private FinalDimensions paddedDims;
 
-	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
-		if (paddedDims == null || padOp == null || convolver == null || convolution == null) {
+	public RandomAccessibleInterval<T> calculate(
+		RandomAccessibleInterval<T> input)
+	{
+		if (paddedDims == null || padOp == null || convolver == null ||
+			convolution == null)
+		{
 			init(input);
 		}
 		convolver.compute(padOp.calculate(input, paddedDims), convolution);
@@ -56,20 +62,25 @@ public class FastConvolver<T extends RealType<T>> extends
 	@SuppressWarnings("unchecked")
 	private void init(RandomAccessibleInterval<T> input) {
 		final long[] paddedSize = new long[2];
-		paddedSize[0] = (int) input.dimension(0) + (int) kernel.dimension(0) - 1;
-		paddedSize[1] = (int) input.dimension(1) + (int) kernel.dimension(1) - 1;
+		paddedSize[0] = (int) input.dimension(0) + (int) kernel.dimension(0) -
+			1;
+		paddedSize[1] = (int) input.dimension(1) + (int) kernel.dimension(1) -
+			1;
 
 		paddedDims = new FinalDimensions(paddedSize);
 
-		padOp = Functions.binary(ops, PadInputFFTMethods.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, Dimensions.class, true,
-				new OutOfBoundsBorderFactory<T, RandomAccessibleInterval<T>>());
+		padOp = Functions.binary(ops, PadInputFFTMethods.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class,
+			Dimensions.class, true,
+			new OutOfBoundsBorderFactory<T, RandomAccessibleInterval<T>>());
 
-		final RandomAccessibleInterval<T> padKernel = ops.filter().padShiftFFTKernel(kernel, paddedDims);
+		final RandomAccessibleInterval<T> padKernel = ops.filter()
+			.padShiftFFTKernel(kernel, paddedDims);
 
-		convolver = Computers.unary(ops, ConvolveFFTC.class, input, padOp.calculate(input, paddedDims), padKernel,
-				ops.filter().createFFTOutput(paddedDims, new ComplexFloatType(), true), ops.filter().fft(padKernel),
-				true, false);
+		convolver = Computers.unary(ops, ConvolveFFTC.class, input, padOp
+			.calculate(input, paddedDims), padKernel, ops.filter()
+				.createFFTOutput(paddedDims, new ComplexFloatType(), true), ops
+					.filter().fft(padKernel), true, false);
 
 		convolution = (RandomAccessibleInterval<T>) ops.create().img(input);
 	}
