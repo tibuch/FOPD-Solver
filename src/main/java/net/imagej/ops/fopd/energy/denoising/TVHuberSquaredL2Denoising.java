@@ -1,14 +1,13 @@
-package net.imagej.ops.fopd;
 
-import net.imagej.ops.OpService;
+package net.imagej.ops.fopd.energy.denoising;
+
 import net.imagej.ops.fopd.costfunction.CostFunction;
 import net.imagej.ops.fopd.costfunction.squaredl2norm.SquaredL2Norm2D;
-import net.imagej.ops.fopd.operator.Identity;
+import net.imagej.ops.fopd.operator.LinearOperator;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2D;
-import net.imagej.ops.fopd.solver.DefaultSolver;
 import net.imagej.ops.fopd.solver.DefaultSolverState;
-import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
+import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -25,14 +24,9 @@ import org.scijava.plugin.Plugin;
  * image.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  */
 @Plugin(type = UnaryHybridCF.class)
-public class TVHuberSquaredL2Denoising<T extends RealType<T>>
-		extends AbstractUnaryFunctionOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> {
-
-	@Parameter
-	private OpService ops;
+public class TVHuberSquaredL2Denoising<T extends RealType<T>> extends AbstractDenoising<T> {
 
 	@Parameter
 	private double lambda;
@@ -40,19 +34,19 @@ public class TVHuberSquaredL2Denoising<T extends RealType<T>>
 	@Parameter
 	private double alpha;
 
-	@Parameter
-	private int numIt;
+	@Override
+	SolverState<T> getSolverState(RandomAccessibleInterval<T>[] input) {
+		return new DefaultSolverState<T>(ops, input, 1);
+	}
 
-	@SuppressWarnings({ "unchecked" })
-	public RandomAccessibleInterval<T> calculate(RandomAccessibleInterval<T> input) {
+	@Override
+	Regularizer<T> getRegularizer(final double numViews) {
+		return new TVHuber2D<T>(ops, lambda, alpha, (1.0 / (4.0 + numViews)));
+	}
 
-		final DefaultSolverState<T> state = new DefaultSolverState<T>(ops, input);
-
-		final TVHuber2D<T> tv = new TVHuber2D<T>(ops, lambda, alpha, 0.25);
-		final SquaredL2Norm2D<T> cf = new SquaredL2Norm2D<T>(ops, input, ops.op(Identity.class, input),
-				ops.op(Identity.class, input), 0.25);
-
-		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tv, cf, numIt);
-		return solver.calculate(state);
+	@Override
+	CostFunction<T> getCostFunction(RandomAccessibleInterval<T>[] input, LinearOperator<T>[] ascentOperator,
+			LinearOperator<T>[] descentOperator) {
+		return new SquaredL2Norm2D<T>(ops, input, ascentOperator, descentOperator, (1.0 / (4.0 + input.length)));
 	}
 }

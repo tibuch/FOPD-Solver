@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.helper;
 
 import net.imagej.ops.OpService;
@@ -22,12 +23,13 @@ import org.scijava.plugin.Plugin;
  * Implementation of {@link L2Norm}.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 @Plugin(type = BinaryHybridCF.class)
-public class DefaultL2Norm<T extends RealType<T>>
-		extends AbstractUnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>> implements L2Norm<T> {
+public class DefaultL2Norm<T extends RealType<T>> extends
+	AbstractUnaryHybridCF<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>>
+	implements L2Norm<T>
+{
 
 	@Parameter
 	private OpService ops;
@@ -39,29 +41,38 @@ public class DefaultL2Norm<T extends RealType<T>>
 	private Converter<T, T> sqrtConverter;
 
 	@SuppressWarnings("unchecked")
-	public RandomAccessibleInterval<T> createOutput(final RandomAccessibleInterval<T>[] input) {
+	public RandomAccessibleInterval<T> createOutput(
+		final RandomAccessibleInterval<T>[] input)
+	{
 		return (RandomAccessibleInterval<T>) ops.create().img(input[0]);
 	}
 
-	public void compute(final RandomAccessibleInterval<T>[] input, final RandomAccessibleInterval<T> output) {
+	public void compute(final RandomAccessibleInterval<T>[] input,
+		final RandomAccessibleInterval<T> output)
+	{
 		int numDualVariables = input.length;
 
 		if (numDualVariables == 1) {
 			norm1D(input[0], output);
-		} else if (numDualVariables == 2) {
+		}
+		else if (numDualVariables == 2) {
 			norm2D(input[0], input[1], output);
-		} else if (numDualVariables == 3) {
+		}
+		else if (numDualVariables == 3) {
 			norm3D(input[0], input[1], input[2], output);
-		} else if (numDualVariables == 4) {
-			norm4D(input[0], input[1], input[2],
-					input[3], output);
-		} else {
+		}
+		else if (numDualVariables == 4) {
+			norm4D(input[0], input[1], input[2], input[3], output);
+		}
+		else {
 			normND(input, output);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void normND(final RandomAccessibleInterval<T>[] input, final RandomAccessibleInterval<T> output) {
+	private void normND(final RandomAccessibleInterval<T>[] input,
+		final RandomAccessibleInterval<T> output)
+	{
 		final RandomAccessibleInterval<T> stack = Views.stack(input);
 
 		if (projector == null) {
@@ -69,22 +80,27 @@ public class DefaultL2Norm<T extends RealType<T>>
 		}
 
 		final T type = input[0].randomAccess().get().createVariable();
-		projector.compute(Converters.convert(stack, squareConverter, type), (IterableInterval<T>) output);
+		projector.compute(Converters.convert(stack, squareConverter, type),
+			(IterableInterval<T>) output);
 
 		Converters.convert(output, sqrtConverter, type);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void init(final RandomAccessibleInterval<T> stack, final IterableInterval<T> output, final int d) {
+	private void init(final RandomAccessibleInterval<T> stack,
+		final IterableInterval<T> output, final int d)
+	{
 		int[] tmpDims = new int[output.numDimensions()];
 		for (int i = 0; i < tmpDims.length; i++) {
 			tmpDims[i] += 1;
 		}
-		IterableInterval<T> tmpOut = (IterableInterval<T>) ops.create().img(output);
-		RandomAccessibleInterval<T> tmpStack = (RandomAccessibleInterval<T>) ops.create().img(stack);
+		IterableInterval<T> tmpOut = (IterableInterval<T>) ops.create().img(
+			output);
+		RandomAccessibleInterval<T> tmpStack = (RandomAccessibleInterval<T>) ops
+			.create().img(stack);
 		projector = ops.op(DefaultProjectParallel.class, tmpOut, tmpStack,
-				Computers.unary(ops, Sum.class, output.firstElement().createVariable(), RandomAccessibleInterval.class),
-				d);
+			Computers.unary(ops, Sum.class, output.firstElement()
+				.createVariable(), RandomAccessibleInterval.class), d);
 
 		squareConverter = new Converter<T, T>() {
 
@@ -105,7 +121,9 @@ public class DefaultL2Norm<T extends RealType<T>>
 		};
 	}
 
-	private void norm1D(final RandomAccessible<T> source0, final RandomAccessibleInterval<T> norm) {
+	private void norm1D(final RandomAccessible<T> source0,
+		final RandomAccessibleInterval<T> norm)
+	{
 		final int n = source0.numDimensions();
 
 		final long[] min = new long[n];
@@ -132,8 +150,7 @@ public class DefaultL2Norm<T extends RealType<T>>
 			// check dimension 0 separately to avoid the loop over d in most
 			// iterations
 			if (result.getLongPosition(0) == max0) {
-				if (n == 1)
-					return;
+				if (n == 1) return;
 				result.move(shiftback[0], 0);
 				s1.move(shiftback[0], 0);
 				// now check the remaining dimensions
@@ -141,22 +158,25 @@ public class DefaultL2Norm<T extends RealType<T>>
 					if (result.getLongPosition(d) == max[d]) {
 						result.move(shiftback[d], d);
 						s1.move(shiftback[d], d);
-						if (d == n - 1)
-							return;
-					} else {
+						if (d == n - 1) return;
+					}
+					else {
 						result.fwd(d);
 						s1.fwd(d);
 						break;
 					}
-			} else {
+			}
+			else {
 				result.fwd(0);
 				s1.fwd(0);
 			}
 		}
 	}
 
-	private void norm2D(final RandomAccessible<T> source0, final RandomAccessible<T> source1,
-			final RandomAccessibleInterval<T> norm) {
+	private void norm2D(final RandomAccessible<T> source0,
+		final RandomAccessible<T> source1,
+		final RandomAccessibleInterval<T> norm)
+	{
 		final int n = source0.numDimensions();
 
 		final long[] min = new long[n];
@@ -187,8 +207,7 @@ public class DefaultL2Norm<T extends RealType<T>>
 			// check dimension 0 separately to avoid the loop over d in most
 			// iterations
 			if (result.getLongPosition(0) == max0) {
-				if (n == 1)
-					return;
+				if (n == 1) return;
 				result.move(shiftback[0], 0);
 				s1.move(shiftback[0], 0);
 				s2.move(shiftback[0], 0);
@@ -198,15 +217,16 @@ public class DefaultL2Norm<T extends RealType<T>>
 						result.move(shiftback[d], d);
 						s1.move(shiftback[d], d);
 						s2.move(shiftback[d], d);
-						if (d == n - 1)
-							return;
-					} else {
+						if (d == n - 1) return;
+					}
+					else {
 						result.fwd(d);
 						s1.fwd(d);
 						s2.fwd(d);
 						break;
 					}
-			} else {
+			}
+			else {
 				result.fwd(0);
 				s1.fwd(0);
 				s2.fwd(0);
@@ -214,8 +234,10 @@ public class DefaultL2Norm<T extends RealType<T>>
 		}
 	}
 
-	private void norm3D(final RandomAccessible<T> source0, final RandomAccessible<T> source1,
-			final RandomAccessible<T> source2, final RandomAccessibleInterval<T> norm) {
+	private void norm3D(final RandomAccessible<T> source0,
+		final RandomAccessible<T> source1, final RandomAccessible<T> source2,
+		final RandomAccessibleInterval<T> norm)
+	{
 		final int n = source0.numDimensions();
 
 		final long[] min = new long[n];
@@ -249,8 +271,7 @@ public class DefaultL2Norm<T extends RealType<T>>
 			// check dimension 0 separately to avoid the loop over d in most
 			// iterations
 			if (result.getLongPosition(0) == max0) {
-				if (n == 1)
-					return;
+				if (n == 1) return;
 				result.move(shiftback[0], 0);
 				s1.move(shiftback[0], 0);
 				s2.move(shiftback[0], 0);
@@ -262,16 +283,17 @@ public class DefaultL2Norm<T extends RealType<T>>
 						s1.move(shiftback[d], d);
 						s2.move(shiftback[d], d);
 						s3.move(shiftback[d], d);
-						if (d == n - 1)
-							return;
-					} else {
+						if (d == n - 1) return;
+					}
+					else {
 						result.fwd(d);
 						s1.fwd(d);
 						s2.fwd(d);
 						s3.fwd(d);
 						break;
 					}
-			} else {
+			}
+			else {
 				result.fwd(0);
 				s1.fwd(0);
 				s2.fwd(0);
@@ -280,9 +302,11 @@ public class DefaultL2Norm<T extends RealType<T>>
 		}
 	}
 
-	private void norm4D(final RandomAccessible<T> source0, final RandomAccessible<T> source1,
-			final RandomAccessible<T> source2, final RandomAccessible<T> source3,
-			final RandomAccessibleInterval<T> norm) {
+	private void norm4D(final RandomAccessible<T> source0,
+		final RandomAccessible<T> source1, final RandomAccessible<T> source2,
+		final RandomAccessible<T> source3,
+		final RandomAccessibleInterval<T> norm)
+	{
 		final int n = source0.numDimensions();
 
 		final long[] min = new long[n];
@@ -319,8 +343,7 @@ public class DefaultL2Norm<T extends RealType<T>>
 			// check dimension 0 separately to avoid the loop over d in most
 			// iterations
 			if (result.getLongPosition(0) == max0) {
-				if (n == 1)
-					return;
+				if (n == 1) return;
 				result.move(shiftback[0], 0);
 				s1.move(shiftback[0], 0);
 				s2.move(shiftback[0], 0);
@@ -334,9 +357,9 @@ public class DefaultL2Norm<T extends RealType<T>>
 						s2.move(shiftback[d], d);
 						s3.move(shiftback[d], d);
 						s4.move(shiftback[d], d);
-						if (d == n - 1)
-							return;
-					} else {
+						if (d == n - 1) return;
+					}
+					else {
 						result.fwd(d);
 						s1.fwd(d);
 						s2.fwd(d);
@@ -344,7 +367,8 @@ public class DefaultL2Norm<T extends RealType<T>>
 						s4.fwd(d);
 						break;
 					}
-			} else {
+			}
+			else {
 				result.fwd(0);
 				s1.fwd(0);
 				s2.fwd(0);

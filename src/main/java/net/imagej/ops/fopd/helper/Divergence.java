@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.helper;
 
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
@@ -15,7 +16,6 @@ import net.imglib2.type.numeric.RealType;
  * http://mathworld.wolfram.com/Divergence.html
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 public interface Divergence<T extends RealType<T>>

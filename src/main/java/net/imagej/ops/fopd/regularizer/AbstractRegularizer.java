@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.regularizer;
 
 import net.imagej.ops.fopd.Ascent;
@@ -8,10 +9,11 @@ import net.imglib2.type.numeric.RealType;
  * Abstract implementation of {@link Regularizer}.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
-public class AbstractRegularizer<T extends RealType<T>> implements Regularizer<T> {
+public class AbstractRegularizer<T extends RealType<T>> implements
+	Regularizer<T>
+{
 
 	protected Ascent<T> ascent;
 

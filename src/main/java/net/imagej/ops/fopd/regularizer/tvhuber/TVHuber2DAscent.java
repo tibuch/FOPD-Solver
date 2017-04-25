@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.regularizer.tvhuber;
 
 import net.imagej.ops.OpService;
@@ -35,12 +36,13 @@ import org.scijava.plugin.Plugin;
  * TV-Huber of one 2D image: {@link Ascent} Step.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
 @Plugin(type = Ascent.class)
-public class TVHuber2DAscent<T extends RealType<T>>
-		extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements Ascent<T> {
+public class TVHuber2DAscent<T extends RealType<T>> extends
+	AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements
+	Ascent<T>
+{
 
 	/**
 	 * The OpService.
@@ -93,40 +95,49 @@ public class TVHuber2DAscent<T extends RealType<T>>
 	public SolverState<T> calculate(SolverState<T> input) {
 		final DualVariables<T> dualVariables = input.getRegularizerDV();
 
-		if (gradientX == null || gradientY == null || mapperAdd == null || norm == null) {
+		if (gradientX == null || gradientY == null || mapperAdd == null ||
+			norm == null)
+		{
 			init(dualVariables);
 		}
 
 		mapperAdd.compute(dualVariables.getDualVariable(0),
-				(RandomAccessibleInterval<T>) Converters.convert(gradientX.calculate(input.getResultImage(0)), c1, input.getType()),
-				(IterableInterval<T>) dualVariables.getDualVariable(0));
+			(RandomAccessibleInterval<T>) Converters.convert(gradientX
+				.calculate(input.getResultImage(0)), c1, input.getType()),
+			(IterableInterval<T>) dualVariables.getDualVariable(0));
 
 		mapperAdd.compute(dualVariables.getDualVariable(1),
-				(RandomAccessibleInterval<T>) Converters.convert(gradientY.calculate(input.getResultImage(0)), c2, input.getType()),
-				(IterableInterval<T>) dualVariables.getDualVariable(1));
+			(RandomAccessibleInterval<T>) Converters.convert(gradientY
+				.calculate(input.getResultImage(0)), c2, input.getType()),
+			(IterableInterval<T>) dualVariables.getDualVariable(1));
 
-		mapperDivide.compute((IterableInterval<T>) dualVariables.getDualVariable(0),
-				(IterableInterval<T>) dualVariables.getDualVariable(0));
-		mapperDivide.compute((IterableInterval<T>) dualVariables.getDualVariable(1),
-				(IterableInterval<T>) dualVariables.getDualVariable(1));
+		mapperDivide.compute((IterableInterval<T>) dualVariables
+			.getDualVariable(0), (IterableInterval<T>) dualVariables
+				.getDualVariable(0));
+		mapperDivide.compute((IterableInterval<T>) dualVariables
+			.getDualVariable(1), (IterableInterval<T>) dualVariables
+				.getDualVariable(1));
 
 		normComputer.compute(dualVariables.getAllDualVariables(), norm);
 
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(0), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(1), (IterableInterval<T>) norm);
-		
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
+			.getDualVariable(0), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
+			.getDualVariable(1), (IterableInterval<T>) norm);
+
 		return input;
 	}
 
 	@SuppressWarnings("unchecked")
 	private void init(final DualVariables<T> input) {
-		norm = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
-		gradientX = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 0,
-				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
-		gradientY = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
-				RandomAccessibleInterval.class, 1,
-				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		norm = (RandomAccessibleInterval<T>) ops.create().img(input
+			.getDualVariable(0));
+		gradientX = Functions.unary(ops, DefaultForwardDifference.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 0,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		gradientY = Functions.unary(ops, DefaultForwardDifference.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 1,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
 
 		c1 = new Converter<T, T>() {
 
@@ -142,23 +153,29 @@ public class TVHuber2DAscent<T extends RealType<T>>
 			}
 		};
 
-		mapperAdd = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
-				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
-		mapperAdd.setOp(Computers.binary(ops, Ops.Math.Add.class, input.getType(), input.getType(), input.getType()));
+		mapperAdd = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class,
+			IterableInterval.class, RandomAccessibleInterval.class,
+			RandomAccessibleInterval.class, BinaryComputerOp.class);
+		mapperAdd.setOp(Computers.binary(ops, Ops.Math.Add.class, input
+			.getType(), input.getType(), input.getType()));
 
 		final T divider = input.getType();
 		divider.setReal(1 + alpha * stepSize);
-		mapperDivide = (IIToIIParallel<T, T>) ops.op(Map.class, IterableInterval.class, IterableInterval.class,
-				UnaryComputerOp.class);
-		mapperDivide
-				.setOp(Computers.unary(ops, Ops.Math.Divide.class, input.getType(), divider));
+		mapperDivide = (IIToIIParallel<T, T>) ops.op(Map.class,
+			IterableInterval.class, IterableInterval.class,
+			UnaryComputerOp.class);
+		mapperDivide.setOp(Computers.unary(ops, Ops.Math.Divide.class, input
+			.getType(), divider));
 
-		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class, IterableInterval.class, IterableInterval.class,
-				BinaryInplace1Op.class);
+		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class,
+			IterableInterval.class, IterableInterval.class,
+			BinaryInplace1Op.class);
 
-		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
-		inplaceMapper.setOp((BinaryInplace1Op<T, T, T>) Inplaces.binary1(ops, DefaultL1Projector.class, input.getType(),
-				input.getType(), lambda));
+		normComputer = Computers.unary(ops, DefaultL2Norm.class,
+			RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
+		inplaceMapper.setOp((BinaryInplace1Op<T, T, T>) Inplaces.binary1(ops,
+			DefaultL1Projector.class, input.getType(), input.getType(),
+			lambda));
 
 	}
 }

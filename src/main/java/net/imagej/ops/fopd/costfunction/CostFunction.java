@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.costfunction;
 
 import net.imagej.ops.fopd.Ascent;
@@ -10,7 +11,6 @@ import net.imglib2.type.numeric.RealType;
  * formation process.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  */
 public interface CostFunction<T extends RealType<T>> {
 

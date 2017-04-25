@@ -1,3 +1,4 @@
+
 package net.imagej.ops.fopd.costfunction;
 
 import net.imagej.ops.fopd.Ascent;
@@ -8,10 +9,11 @@ import net.imglib2.type.numeric.RealType;
  * Abstract implementation of {@link CostFunction}.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
- *
  * @param <T>
  */
-public class AbstractCostFunction<T extends RealType<T>> implements CostFunction<T> {
+public abstract class AbstractCostFunction<T extends RealType<T>> implements
+	CostFunction<T>
+{
 
 	protected Ascent<T> ascent;
 
