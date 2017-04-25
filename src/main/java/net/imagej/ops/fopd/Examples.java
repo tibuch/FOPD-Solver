@@ -21,9 +21,11 @@ import net.imagej.ops.fopd.energy.denoising.TVHuberSquaredL2Denoising;
 import net.imagej.ops.fopd.energy.denoising.TVKLDivDenoising;
 import net.imagej.ops.fopd.energy.denoising.TVL1Denoising;
 import net.imagej.ops.fopd.energy.denoising.TVSquaredL2Denoising;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import org.scijava.Context;
@@ -95,12 +97,14 @@ public class Examples {
 
 		// Deconvolution
 		ImageJFunctions.show(ex.getConvolvedImgs()[0]);
-		ImageJFunctions.show(ex.getConvolvedImgs()[1]);
+//		ImageJFunctions.show(ex.getConvolvedImgs()[1]);
 		// L1 costfunction
-		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImgs(), ex
-			.getKernels(), numIts));
+//		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImgs(), ex
+//			.getKernels(), numIts));
 		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImg0(), ex
 			.getKernel0(), numIts));
+		
+		ImageJFunctions.show(ex.rlDeconvolution(ex.getConvolvedImg0(), ex.getKernel0(), numIts));
 
 		// ImageJFunctions.show(ex.deconvolutionL1TVHuber2D(ex.getConvolvedImgs(),
 		// ex.getKernels(), numIts));
@@ -489,6 +493,21 @@ public class Examples {
 		t = System.currentTimeMillis() - t;
 		System.out.println("TGVSquaredL2-Deconvolution [" + img[0].dimension(
 			0) + ", " + img[0].dimension(1) + "]: " + t / 1000.0 + "sec");
+		System.out.println("Time/Iteration: " + (double) t / numIts +
+			"millisec");
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Img<FloatType> rlDeconvolution(
+		final Img<FloatType>[] imgs, final Img<FloatType>[] kernel,
+		final int numIts)
+	{
+		long t = System.currentTimeMillis();
+		Img result = (Img)ops.deconvolve().richardsonLucy(imgs[0], kernel[0], numIts);
+		t = System.currentTimeMillis() - t;
+		System.out.println("TGVSquaredL2-Deconvolution [" + imgs[0].dimension(
+			0) + ", " + imgs[0].dimension(1) + "]: " + t / 1000.0 + "sec");
 		System.out.println("Time/Iteration: " + (double) t / numIts +
 			"millisec");
 		return result;
