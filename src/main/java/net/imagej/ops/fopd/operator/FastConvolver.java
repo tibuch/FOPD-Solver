@@ -61,11 +61,12 @@ public class FastConvolver<T extends RealType<T>> extends
 
 	@SuppressWarnings("unchecked")
 	private void init(RandomAccessibleInterval<T> input) {
-		final long[] paddedSize = new long[2];
-		paddedSize[0] = (int) input.dimension(0) + (int) kernel.dimension(0) -
-			1;
-		paddedSize[1] = (int) input.dimension(1) + (int) kernel.dimension(1) -
-			1;
+		final int ndim = input.numDimensions();
+		final long[] paddedSize = new long[ndim];
+		
+		for (int i = 0; i < ndim; i++) {
+			paddedSize[i] = (int) input.dimension(i) + (int) kernel.dimension(i) - 1;
+		}
 
 		paddedDims = new FinalDimensions(paddedSize);
 
