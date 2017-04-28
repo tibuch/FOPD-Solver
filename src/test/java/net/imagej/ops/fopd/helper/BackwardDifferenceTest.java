@@ -30,7 +30,7 @@ public class BackwardDifferenceTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			DefaultBackwardDifference.class, img, 0,
+			DefaultBackwardDifference.class, img2D, 0,
 			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
 				.cursor();
 		int i = 0;
@@ -45,7 +45,7 @@ public class BackwardDifferenceTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			DefaultBackwardDifference.class, img, 1,
+			DefaultBackwardDifference.class, img2D, 1,
 			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
 				.cursor();
 		int i = 0;

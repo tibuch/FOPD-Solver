@@ -3,14 +3,14 @@ package net.imagej.ops.fopd;
 
 import static org.junit.Assert.assertEquals;
 
-import net.imagej.ops.fopd.energy.deconvolution.TGVL1Deconvolution;
-import net.imagej.ops.fopd.energy.deconvolution.TVHuberL1Deconvolution;
-import net.imagej.ops.fopd.energy.deconvolution.TVKLDivDeconvolution;
-import net.imagej.ops.fopd.energy.deconvolution.TVL1Deconvolution;
-import net.imagej.ops.fopd.energy.deconvolution.TVSquaredL2Deconvolution;
-import net.imagej.ops.fopd.energy.denoising.TGVL1Denoising;
-import net.imagej.ops.fopd.energy.denoising.TVHuberL1Denoising;
-import net.imagej.ops.fopd.energy.denoising.TVL1Denoising;
+import net.imagej.ops.fopd.energy.deconvolution.TGVL1Deconvolution2D;
+import net.imagej.ops.fopd.energy.deconvolution.TVHuberL1Deconvolution2D;
+import net.imagej.ops.fopd.energy.deconvolution.TVKLDivDeconvolution2D;
+import net.imagej.ops.fopd.energy.deconvolution.TVL1Deconvolution2D;
+import net.imagej.ops.fopd.energy.deconvolution.TVSquaredL2Deconvolution2D;
+import net.imagej.ops.fopd.energy.denoising.TGVL1Denoising2D;
+import net.imagej.ops.fopd.energy.denoising.TVHuberL1Denoising2D;
+import net.imagej.ops.fopd.energy.denoising.TVL1Denoising2D;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -69,7 +69,7 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVL1Denoising.class, new RandomAccessibleInterval[] { img }, 10,
+			TVL1Denoising2D.class, new RandomAccessibleInterval[] { img2D }, 10,
 			0.5)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -85,7 +85,7 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVHuberL1Denoising.class, new RandomAccessibleInterval[] { img },
+			TVHuberL1Denoising2D.class, new RandomAccessibleInterval[] { img2D },
 			10, 0.5, 0.05)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -101,7 +101,7 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TGVL1Denoising.class, new RandomAccessibleInterval[] { img }, 10,
+			TGVL1Denoising2D.class, new RandomAccessibleInterval[] { img2D }, 10,
 			0.5, 1.0)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -117,8 +117,8 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVL1Deconvolution.class, new RandomAccessibleInterval[] {
-				convolved }, new RandomAccessibleInterval[] { kernel }, 10,
+			TVL1Deconvolution2D.class, new RandomAccessibleInterval[] {
+				convolved2D }, new RandomAccessibleInterval[] { kernel2D }, 10,
 			0.1)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -134,8 +134,8 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVHuberL1Deconvolution.class, new RandomAccessibleInterval[] {
-				convolved }, new RandomAccessibleInterval[] { kernel }, 10, 0.1,
+			TVHuberL1Deconvolution2D.class, new RandomAccessibleInterval[] {
+				convolved2D }, new RandomAccessibleInterval[] { kernel2D }, 10, 0.1,
 			0.8)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -151,8 +151,8 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TGVL1Deconvolution.class, new RandomAccessibleInterval[] {
-				convolved }, new RandomAccessibleInterval[] { kernel }, 10, 0.5,
+			TGVL1Deconvolution2D.class, new RandomAccessibleInterval[] {
+				convolved2D }, new RandomAccessibleInterval[] { kernel2D }, 10, 0.5,
 			1)).cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -168,9 +168,9 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVL1Deconvolution.class, new RandomAccessibleInterval[] { ops.copy()
-				.img(convolved), ops.copy().img(convolved) },
-			new RandomAccessibleInterval[] { kernel, kernel }, 10, 0.1))
+			TVL1Deconvolution2D.class, new RandomAccessibleInterval[] { ops.copy()
+				.img(convolved2D), ops.copy().img(convolved2D) },
+			new RandomAccessibleInterval[] { kernel2D, kernel2D }, 10, 0.1))
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -186,9 +186,9 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVSquaredL2Deconvolution.class, new RandomAccessibleInterval[] { ops
-				.copy().img(convolved), ops.copy().img(convolved) },
-			new RandomAccessibleInterval[] { kernel, kernel }, 10, 0.1))
+			TVSquaredL2Deconvolution2D.class, new RandomAccessibleInterval[] { ops
+				.copy().img(convolved2D), ops.copy().img(convolved2D) },
+			new RandomAccessibleInterval[] { kernel2D, kernel2D }, 10, 0.1))
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
@@ -205,9 +205,9 @@ public class SolverTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			TVKLDivDeconvolution.class, new RandomAccessibleInterval[] { ops
-				.copy().img(convolved), ops.copy().img(convolved) },
-			new RandomAccessibleInterval[] { kernel, kernel }, 10, 0.1))
+			TVKLDivDeconvolution2D.class, new RandomAccessibleInterval[] { ops
+				.copy().img(convolved2D), ops.copy().img(convolved2D) },
+			new RandomAccessibleInterval[] { kernel2D, kernel2D }, 10, 0.1))
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {

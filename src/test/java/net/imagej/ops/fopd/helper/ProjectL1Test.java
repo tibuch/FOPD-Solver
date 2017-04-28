@@ -35,16 +35,16 @@ public class ProjectL1Test extends AbstractOpTest {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void projectL1Test01() {
-		final Img<DoubleType> result = ops.copy().img(posNegImg);
+		final Img<DoubleType> result = ops.copy().img(posNegImg2D);
 
 		final UnaryComputerOp<RandomAccessibleInterval[], RandomAccessibleInterval> normComputer =
 			Computers.unary(ops, DefaultL2Norm.class,
 				RandomAccessibleInterval.class,
 				RandomAccessibleInterval[].class);
 
-		final Img<DoubleType> norm = ops.create().img(posNegImg);
+		final Img<DoubleType> norm = ops.create().img(posNegImg2D);
 		normComputer.compute(new RandomAccessibleInterval[] { ops.copy().img(
-			posNegImg), ops.copy().img(posNegImg) }, norm);
+			posNegImg2D), ops.copy().img(posNegImg2D) }, norm);
 
 		final BinaryInplace1Op<? super DoubleType, DoubleType, DoubleType> projector =
 			Inplaces.binary1(ops, DefaultL1Projector.class, DoubleType.class,
@@ -64,16 +64,16 @@ public class ProjectL1Test extends AbstractOpTest {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void projectL1Test05() {
-		final Img<DoubleType> result = ops.copy().img(posNegImg);
+		final Img<DoubleType> result = ops.copy().img(posNegImg2D);
 
 		final UnaryComputerOp<RandomAccessibleInterval[], RandomAccessibleInterval> normComputer =
 			Computers.unary(ops, DefaultL2Norm.class,
 				RandomAccessibleInterval.class,
 				RandomAccessibleInterval[].class);
 
-		final Img<DoubleType> norm = ops.create().img(posNegImg);
+		final Img<DoubleType> norm = ops.create().img(posNegImg2D);
 		normComputer.compute(new RandomAccessibleInterval[] { ops.copy().img(
-			posNegImg), ops.copy().img(posNegImg) }, norm);
+			posNegImg2D), ops.copy().img(posNegImg2D) }, norm);
 
 		final BinaryInplace1Op<? super DoubleType, DoubleType, DoubleType> projector =
 			Inplaces.binary1(ops, DefaultL1Projector.class, DoubleType.class,

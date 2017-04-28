@@ -27,13 +27,21 @@ public abstract class AbstractOpTest {
 	@Parameter
 	protected OpMatchingService matcher;
 
-	protected Img<DoubleType> img;
+	protected Img<DoubleType> img2D;
 
-	protected Img<DoubleType> posNegImg;
+	protected Img<DoubleType> posNegImg2D;
 
-	protected Img<DoubleType> kernel;
+	protected Img<DoubleType> kernel2D;
 
-	protected Img<DoubleType> convolved;
+	protected Img<DoubleType> convolved2D;
+	
+	protected Img<DoubleType> img3D;
+
+	protected Img<DoubleType> posNegImg3D;
+
+	protected Img<DoubleType> kernel3D;
+
+	protected Img<DoubleType> convolved3D;
 
 	protected Context createContext() {
 		return new Context(OpService.class, OpMatchingService.class,
@@ -43,13 +51,13 @@ public abstract class AbstractOpTest {
 	@Before
 	public void setUp() {
 		createContext().inject(this);
-		img = ops.create().img(new int[] { 3, 3 });
-		posNegImg = ops.create().img(new int[] { 3, 3 });
+		img2D = ops.create().img(new int[] { 3, 3 });
+		posNegImg2D = ops.create().img(new int[] { 3, 3 });
 
-		RandomAccess<DoubleType> ra = img.randomAccess();
-		final RandomAccess<DoubleType> posNegRA = posNegImg.randomAccess();
-		for (int x = 0; x < img.dimension(0); x++) {
-			for (int y = 0; y < img.dimension(1); y++) {
+		RandomAccess<DoubleType> ra = img2D.randomAccess();
+		RandomAccess<DoubleType> posNegRA = posNegImg2D.randomAccess();
+		for (int x = 0; x < img2D.dimension(0); x++) {
+			for (int y = 0; y < img2D.dimension(1); y++) {
 				ra.setPosition(new int[] { x, y });
 				if (x % 2 == 0) {
 					ra.get().set(1.0);
@@ -63,8 +71,8 @@ public abstract class AbstractOpTest {
 		posNegRA.setPosition(new int[] { 1, 1 });
 		posNegRA.get().set(1);
 
-		kernel = ops.create().img(new int[] { 3, 3 });
-		ra = kernel.randomAccess();
+		kernel2D = ops.create().img(new int[] { 3, 3 });
+		ra = kernel2D.randomAccess();
 		ra.setPosition(new int[] { 0, 0 });
 		ra.get().set(0.1);
 		ra.setPosition(new int[] { 1, 0 });
@@ -84,8 +92,8 @@ public abstract class AbstractOpTest {
 		ra.setPosition(new int[] { 2, 2 });
 		ra.get().set(0.1);
 
-		convolved = ops.create().img(new int[] { 3, 3 });
-		ra = convolved.randomAccess();
+		convolved2D = ops.create().img(new int[] { 3, 3 });
+		ra = convolved2D.randomAccess();
 		ra.setPosition(new int[] { 0, 0 });
 		ra.get().set(0.7);
 		ra.setPosition(new int[] { 1, 0 });
@@ -104,6 +112,148 @@ public abstract class AbstractOpTest {
 		ra.get().set(0.8);
 		ra.setPosition(new int[] { 2, 2 });
 		ra.get().set(0.8);
+		
+		// setup 3D
+		img3D = ops.create().img(new int[] { 3, 3, 3 });
+		posNegImg3D = ops.create().img(new int[] { 3, 3, 3 });
+
+		ra = img3D.randomAccess();
+		posNegRA = posNegImg3D.randomAccess();
+		for (int x = 0; x < img3D.dimension(0); x++) {
+			for (int y = 0; y < img3D.dimension(1); y++) {
+				for (int z = 0; z < img3D.dimension(2); z++) {
+					ra.setPosition(new int[] { x, y, z });
+					if (x % 2 == 0) {
+						ra.get().set(1.0);
+					}
+					posNegRA.setPosition(ra);
+					posNegRA.get().set(ra.get().get() - 0.5);
+				}
+			}
+		}
+		ra.setPosition(new int[] { 1, 1, 1 });
+		ra.get().set(1);
+		posNegRA.setPosition(new int[] { 1, 1, 1 });
+		posNegRA.get().set(1);
+
+		kernel3D = ops.create().img(new int[] { 3, 3, 3 });
+		ra = kernel3D.randomAccess();
+		ra.setPosition(new int[] { 0, 0, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 0, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 0, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 0, 1, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 1, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 1, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 0, 2, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 2, 0 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 2, 0 });
+		ra.get().set(0.036);
+		
+		ra.setPosition(new int[] { 0, 0, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 0, 1 });
+		ra.get().set(0.064);
+		ra.setPosition(new int[] { 2, 0, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 0, 1, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 1, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 1, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 0, 2, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 2, 1 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 2, 1 });
+		ra.get().set(0.036);
+		
+		ra.setPosition(new int[] { 0, 0, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 0, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 0, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 0, 1, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 1, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 1, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 0, 2, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 1, 2, 2 });
+		ra.get().set(0.036);
+		ra.setPosition(new int[] { 2, 2, 2 });
+		ra.get().set(0.036);
+
+		convolved3D = ops.create().img(new int[] { 3, 3, 3 });
+		ra = convolved3D.randomAccess();
+		ra.setPosition(new int[] { 0, 0, 0 });
+		ra.get().set(0.5);
+		ra.setPosition(new int[] { 1, 0, 0 });
+		ra.get().set(0.7);
+		ra.setPosition(new int[] { 2, 0, 0 });
+		ra.get().set(0.3);
+		ra.setPosition(new int[] { 0, 1, 0 });
+		ra.get().set(0.4);
+		ra.setPosition(new int[] { 1, 1, 0 });
+		ra.get().set(0.8);
+		ra.setPosition(new int[] { 2, 1, 0 });
+		ra.get().set(0.1);
+		ra.setPosition(new int[] { 0, 2, 0 });
+		ra.get().set(0.1);
+		ra.setPosition(new int[] { 1, 2, 0 });
+		ra.get().set(0.2);
+		ra.setPosition(new int[] { 2, 2, 0 });
+		ra.get().set(0.3);
+		
+		ra.setPosition(new int[] { 0, 0, 1 });
+		ra.get().set(0.6);
+		ra.setPosition(new int[] { 1, 0, 1 });
+		ra.get().set(0.27);
+		ra.setPosition(new int[] { 2, 0, 1 });
+		ra.get().set(0.7);
+		ra.setPosition(new int[] { 0, 1, 1 });
+		ra.get().set(0.2);
+		ra.setPosition(new int[] { 1, 1, 1 });
+		ra.get().set(0.63);
+		ra.setPosition(new int[] { 2, 1, 1 });
+		ra.get().set(0.34);
+		ra.setPosition(new int[] { 0, 2, 1 });
+		ra.get().set(0.726);
+		ra.setPosition(new int[] { 1, 2, 1 });
+		ra.get().set(0.234);
+		ra.setPosition(new int[] { 2, 2, 1 });
+		ra.get().set(0.12);
+		
+		ra.setPosition(new int[] { 0, 0, 2 });
+		ra.get().set(0.86);
+		ra.setPosition(new int[] { 1, 0, 2 });
+		ra.get().set(0.34);
+		ra.setPosition(new int[] { 2, 0, 2 });
+		ra.get().set(0.51);
+		ra.setPosition(new int[] { 0, 1, 2 });
+		ra.get().set(0.12);
+		ra.setPosition(new int[] { 1, 1, 2 });
+		ra.get().set(0.62);
+		ra.setPosition(new int[] { 2, 1, 2 });
+		ra.get().set(0.73);
+		ra.setPosition(new int[] { 0, 2, 2 });
+		ra.get().set(0.72);
+		ra.setPosition(new int[] { 1, 2, 2 });
+		ra.get().set(0.21);
+		ra.setPosition(new int[] { 2, 2, 2 });
+		ra.get().set(0.23);
+		
 	}
 
 	@After

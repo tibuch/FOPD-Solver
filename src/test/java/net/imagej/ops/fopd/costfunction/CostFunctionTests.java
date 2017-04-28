@@ -4,12 +4,12 @@ package net.imagej.ops.fopd.costfunction;
 import static org.junit.Assert.assertEquals;
 
 import net.imagej.ops.fopd.AbstractOpTest;
-import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergence2DAscent;
-import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergence2DDescent;
-import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2DAscent;
-import net.imagej.ops.fopd.costfunction.l1norm.L1Norm2DDescent;
-import net.imagej.ops.fopd.costfunction.squaredl2norm.SquaredL2Norm2DAscent;
-import net.imagej.ops.fopd.costfunction.squaredl2norm.SquaredL2Norm2DDescent;
+import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergenceAscent;
+import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergenceDescent;
+import net.imagej.ops.fopd.costfunction.l1norm.L1NormAscent;
+import net.imagej.ops.fopd.costfunction.l1norm.L1NormDescent;
+import net.imagej.ops.fopd.costfunction.squaredl2norm.SquaredL2NormAscent;
+import net.imagej.ops.fopd.costfunction.squaredl2norm.SquaredL2NormDescent;
 import net.imagej.ops.fopd.operator.Identity;
 import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.fopd.solver.SolverState;
@@ -42,18 +42,18 @@ public class CostFunctionTests extends AbstractOpTest {
 	@Test
 	public void l1NormTest() {
 
-		final L1Norm2DAscent<DoubleType> ascentL1Denoising = ops.op(
-			L1Norm2DAscent.class, SolverState.class, img, ops.op(Identity.class,
-				img));
-		final L1Norm2DDescent<DoubleType> descentL1Denoising = ops.op(
-			L1Norm2DDescent.class, SolverState.class, ops.op(Identity.class,
-				img), 0.25);
+		final L1NormAscent<DoubleType> ascentL1Denoising = ops.op(
+			L1NormAscent.class, SolverState.class, img2D, ops.op(Identity.class,
+				img2D));
+		final L1NormDescent<DoubleType> descentL1Denoising = ops.op(
+			L1NormDescent.class, SolverState.class, ops.op(Identity.class,
+				img2D), 0.25);
 
 		final SolverState<DoubleType> state =
 			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img) }, 1);
+				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
-		Cursor<DoubleType> c = posNegImg.cursor();
+		Cursor<DoubleType> c = posNegImg2D.cursor();
 
 		while (c.hasNext()) {
 			c.next();
@@ -77,18 +77,18 @@ public class CostFunctionTests extends AbstractOpTest {
 	@Test
 	public void klDivTest() {
 
-		final KLDivergence2DAscent<DoubleType> ascentL1Denoising = ops.op(
-			KLDivergence2DAscent.class, SolverState.class, img, ops.op(
-				Identity.class, img));
-		final KLDivergence2DDescent<DoubleType> descentL1Denoising = ops.op(
-			KLDivergence2DDescent.class, SolverState.class, ops.op(
-				Identity.class, img), 0.25);
+		final KLDivergenceAscent<DoubleType> ascentL1Denoising = ops.op(
+			KLDivergenceAscent.class, SolverState.class, img2D, ops.op(
+				Identity.class, img2D));
+		final KLDivergenceDescent<DoubleType> descentL1Denoising = ops.op(
+			KLDivergenceDescent.class, SolverState.class, ops.op(
+				Identity.class, img2D), 0.25);
 
 		final SolverState<DoubleType> state =
 			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img) }, 1);
+				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
-		Cursor<DoubleType> c = posNegImg.cursor();
+		Cursor<DoubleType> c = posNegImg2D.cursor();
 
 		while (c.hasNext()) {
 			c.next();
@@ -112,18 +112,18 @@ public class CostFunctionTests extends AbstractOpTest {
 	@Test
 	public void squaredL2NormTest() {
 
-		final SquaredL2Norm2DAscent<DoubleType> ascentL1Denoising = ops.op(
-			SquaredL2Norm2DAscent.class, SolverState.class, img, ops.op(
-				Identity.class, img));
-		final SquaredL2Norm2DDescent<DoubleType> descentL1Denoising = ops.op(
-			SquaredL2Norm2DDescent.class, SolverState.class, ops.op(
-				Identity.class, img), 0.25);
+		final SquaredL2NormAscent<DoubleType> ascentL1Denoising = ops.op(
+			SquaredL2NormAscent.class, SolverState.class, img2D, ops.op(
+				Identity.class, img2D));
+		final SquaredL2NormDescent<DoubleType> descentL1Denoising = ops.op(
+			SquaredL2NormDescent.class, SolverState.class, ops.op(
+				Identity.class, img2D), 0.25);
 
 		final SolverState<DoubleType> state =
 			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img) }, 1);
+				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
-		Cursor<DoubleType> c = posNegImg.cursor();
+		Cursor<DoubleType> c = posNegImg2D.cursor();
 
 		while (c.hasNext()) {
 			c.next();

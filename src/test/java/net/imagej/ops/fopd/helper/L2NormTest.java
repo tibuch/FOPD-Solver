@@ -40,8 +40,8 @@ public class L2NormTest extends AbstractOpTest {
 				RandomAccessibleInterval.class,
 				RandomAccessibleInterval[].class);
 
-		final Img<DoubleType> result = ops.create().img(posNegImg);
-		normComputer.compute(new RandomAccessibleInterval[] { posNegImg },
+		final Img<DoubleType> result = ops.create().img(posNegImg2D);
+		normComputer.compute(new RandomAccessibleInterval[] { posNegImg2D },
 			result);
 
 		final Cursor<DoubleType> c = result.cursor();
@@ -61,10 +61,10 @@ public class L2NormTest extends AbstractOpTest {
 				RandomAccessibleInterval.class,
 				RandomAccessibleInterval[].class);
 
-		final Img<DoubleType> result = ops.create().img(posNegImg);
+		final Img<DoubleType> result = ops.create().img(posNegImg2D);
 
-		normComputer.compute(new RandomAccessibleInterval[] { posNegImg,
-			posNegImg }, result);
+		normComputer.compute(new RandomAccessibleInterval[] { posNegImg2D,
+			posNegImg2D }, result);
 
 		final Cursor<DoubleType> c = result.cursor();
 		int i = 0;
@@ -83,10 +83,10 @@ public class L2NormTest extends AbstractOpTest {
 				RandomAccessibleInterval.class,
 				RandomAccessibleInterval[].class);
 
-		final Img<DoubleType> result = ops.create().img(posNegImg);
+		final Img<DoubleType> result = ops.create().img(posNegImg2D);
 
-		normComputer.compute(new RandomAccessibleInterval[] { posNegImg,
-			posNegImg, posNegImg }, result);
+		normComputer.compute(new RandomAccessibleInterval[] { posNegImg2D,
+			posNegImg2D, posNegImg2D }, result);
 
 		final Cursor<DoubleType> c = result.cursor();
 		int i = 0;
@@ -104,16 +104,48 @@ public class L2NormTest extends AbstractOpTest {
 				RandomAccessibleInterval.class,
 				RandomAccessibleInterval[].class);
 
-		final Img<DoubleType> result = ops.create().img(posNegImg);
+		final Img<DoubleType> result = ops.create().img(posNegImg2D);
 
-		normComputer.compute(new RandomAccessibleInterval[] { posNegImg,
-			posNegImg, posNegImg, posNegImg }, result);
+		normComputer.compute(new RandomAccessibleInterval[] { posNegImg2D,
+			posNegImg2D, posNegImg2D, posNegImg2D }, result);
 
 		final RandomAccess<DoubleType> ra = result.randomAccess();
 		for (int y = 0; y < result.dimension(1); y++) {
 			for (int x = 0; x < result.dimension(0); x++) {
 				ra.setPosition(new int[] { x, y });
-				assertEquals("L2Norm 2D", 1, ra.get().get(), 1);
+				if (x == 1 && y == 1) {
+					assertEquals("L2Norm 4D", 2, ra.get().get(), 0);
+				} else {
+					assertEquals("L2Norm 4D", 1, ra.get().get(), 0);
+				}
+			}
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void L2Norm9DTest() {
+		final UnaryComputerOp<RandomAccessibleInterval[], RandomAccessibleInterval> normComputer =
+			Computers.unary(ops, DefaultL2Norm.class,
+				RandomAccessibleInterval.class,
+				RandomAccessibleInterval[].class);
+
+		final Img<DoubleType> result = ops.create().img(posNegImg2D);
+
+		normComputer.compute(new RandomAccessibleInterval[] { posNegImg2D, posNegImg2D, posNegImg2D,
+				posNegImg2D, posNegImg2D, posNegImg2D,
+				posNegImg2D, posNegImg2D, posNegImg2D,}, result);
+
+		final RandomAccess<DoubleType> ra = result.randomAccess();
+		for (int y = 0; y < result.dimension(1); y++) {
+			for (int x = 0; x < result.dimension(0); x++) {
+				ra.setPosition(new int[] { x, y });
+				System.out.println(ra.get().get() + ",");
+				if (x == 1 && y == 1) {
+					assertEquals("L2Norm 9D", 3, ra.get().get(), 0);
+				} else {
+					assertEquals("L2Norm 9D", 1.5, ra.get().get(), 0);
+				}
 			}
 		}
 	}
