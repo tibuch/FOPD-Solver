@@ -96,12 +96,12 @@ public class Examples3D {
 		ImageJFunctions.show(ex.getConvolvedImg0()[0]);
 //		ImageJFunctions.show(ex.getConvolvedImgs()[1]);
 //		// L1 costfunction
-//		ImageJFunctions.show(ex.deconvolutionL1TV3D(ex.getConvolvedImgs(), ex
-//			.getKernels(), numIts));
-		ImageJFunctions.show(ex.deconvolutionL1TV3D(ex.getConvolvedImg0(), ex
-			.getKernel0(), numIts));
+		ImageJFunctions.show(ex.deconvolutionL1TV3D(ex.getConvolvedImgs(), ex
+			.getKernels(), numIts));
+//		ImageJFunctions.show(ex.deconvolutionL1TV3D(ex.getConvolvedImg0(), ex
+//			.getKernel0(), numIts));
 		
-		ImageJFunctions.show(ex.rlDeconvolution(ex.getConvolvedImg0(), ex.getKernel0(), numIts));
+//		ImageJFunctions.show(ex.rlDeconvolution(ex.getConvolvedImg0(), ex.getKernel0(), numIts));
 //
 //		 ImageJFunctions.show(ex.deconvolutionL1TVHuber3D(ex.getConvolvedImgs(),
 //		 ex.getKernels(), numIts));
@@ -186,7 +186,7 @@ public class Examples3D {
 	@SuppressWarnings({ "unchecked" })
 	private Img<FloatType>[] getKernel0() {
 		return new Img[] { ImagePlusAdapter.wrap(IJ.openImage(this.getClass()
-			.getResource("3D_kernel_v0.tif").getPath())) };
+			.getResource("psf0.tif").getPath())) };
 	}
 	
 	@SuppressWarnings({ "unchecked" })
@@ -252,7 +252,7 @@ public class Examples3D {
 
 		long t = System.currentTimeMillis();
 		final Img<FloatType> result = (Img<FloatType>) ops.run(
-			TVL1Deconvolution3D.class, img, kernel, numIts, 0.01);
+			TVL1Deconvolution3D.class, img, kernel, numIts, 0.1);
 		t = System.currentTimeMillis() - t;
 		System.out.println("TVL1-Deconvolution [" + img[0].dimension(0) + ", " +
 			img[0].dimension(1) + "]: " + t / 1000.0 + "sec");
