@@ -8,8 +8,12 @@ import net.imagej.ops.fopd.regularizer.tgv.TGV2DAscent;
 import net.imagej.ops.fopd.regularizer.tgv.TGV2DDescent;
 import net.imagej.ops.fopd.regularizer.tv.TotalVariation2DAscent;
 import net.imagej.ops.fopd.regularizer.tv.TotalVariation2DDescent;
+import net.imagej.ops.fopd.regularizer.tv.TotalVariation3DAscent;
+import net.imagej.ops.fopd.regularizer.tv.TotalVariation3DDescent;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2DAscent;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber2DDescent;
+import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber3DAscent;
+import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber3DDescent;
 import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.fopd.solver.TGVSolverState;
@@ -28,22 +32,44 @@ import org.junit.Test;
  */
 public class RegularizerTests extends AbstractOpTest {
 
-	private static double[] expectedTV = new double[] { -0.025,
+	private static double[] expectedTV2D = new double[] { -0.025,
 		0.06035533905932738, -0.017677669529663688, 0.0, -0.04267766952966369,
 		0.0, -0.025, 0.07500000000000001, -0.025 };
+	
+	private static double[] expectedTV3D = new double[] { -0.1, 0.1, 0.0, -0.1,
+			0.07071067811865475, 0.0, -0.1, 0.1, 0.0, -0.1, 0.07071067811865475, 
+			0.0, 0.0, 0.0, 0.0, -0.1, 0.1, 0.0, -0.1, 0.1, 0.0, -0.1, 0.1, 0.0, 
+			-0.1, 0.1, 0.0 };
 
-	private static double[] expectedTVHuber = new double[] {
+	private static double[] expectedTVHuber2D = new double[] {
 		-0.11904761904761904, 0.29582431434425593, -0.08838834764831843, 0.0,
 		-0.20743596669593747, 0.0, -0.11904761904761904, 0.3571428571428571,
 		-0.11904761904761904 };
+	
+	private static double[] expectedTVHuber3D = new double[] { -0.11904761904761904, 
+			0.23809523809523808, -0.11904761904761904, -0.11904761904761904, 0.29582431434425593,
+			-0.08838834764831843, -0.11904761904761904, 0.23809523809523808, -0.11904761904761904,
+			-0.11904761904761904, 0.29582431434425593, -0.08838834764831843, 0.0, -0.35355339059327373,
+			0.0, -0.11904761904761904, 0.3264835857435565, -0.11904761904761904,
+			-0.11904761904761904, 0.23809523809523808, -0.11904761904761904, -0.11904761904761904,
+			0.3264835857435565, -0.11904761904761904, -0.11904761904761904, 0.23809523809523808, 
+			-0.11904761904761904 };
 
-	private static double[] expectedTGV = new double[] { -0.08333333333333333,
+	private static double[] expectedTGV2D = new double[] { -0.08333333333333333,
 		0.25, -0.08333333333333333, 0.0, -0.16666666666666666, 0.0,
 		-0.08333333333333333, 0.25, -0.08333333333333333 };
+	
+	private static double[] expectedTGV3D = new double[] { -0.08333333333333333, 0.16666666666666666,
+			-0.08333333333333333, -0.08333333333333333, 0.16666666666666666, -0.08333333333333333, 
+			-0.08333333333333333, 0.16666666666666666, -0.08333333333333333, -0.08333333333333333, 
+			0.25, -0.08333333333333333, 0.0, -0.16666666666666666, 0.0, -0.08333333333333333, 0.25,
+			-0.08333333333333333, -0.08333333333333333, 0.16666666666666666, -0.08333333333333333,
+			-0.08333333333333333, 0.16666666666666666, -0.08333333333333333, -0.08333333333333333, 
+			0.16666666666666666, -0.08333333333333333 };
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void tvTest() {
+	public void tv2DTest() {
 
 		final TotalVariation2DAscent<DoubleType> ascentTV = ops.op(
 			TotalVariation2DAscent.class, SolverState.class, 0.1);
@@ -52,9 +78,9 @@ public class RegularizerTests extends AbstractOpTest {
 
 		final SolverState<DoubleType> state =
 			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img) }, 1);
+				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
-		Cursor<DoubleType> c = img.cursor();
+		Cursor<DoubleType> c = img2D.cursor();
 
 		while (c.hasNext()) {
 			c.next();
@@ -68,14 +94,46 @@ public class RegularizerTests extends AbstractOpTest {
 			.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("Total Variation differs", expectedTV[i++], c.next()
+			assertEquals("Total Variation 2D differs", expectedTV2D[i++], c.next()
+				.get(), 0);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void tv3DTest() {
+
+		final TotalVariation3DAscent<DoubleType> ascentTV = ops.op(
+			TotalVariation3DAscent.class, SolverState.class, 0.1);
+		final TotalVariation3DDescent<DoubleType> descentTV = ops.op(
+			TotalVariation3DDescent.class, SolverState.class, 0.25);
+
+		final SolverState<DoubleType> state =
+			new DefaultSolverState<DoubleType>(ops,
+				new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
+		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
+		Cursor<DoubleType> c = img3D.cursor();
+
+		while (c.hasNext()) {
+			c.next();
+			ra.setPosition(c);
+			ra.get().set(c.get().get());
+		}
+		ascentTV.calculate(state);
+		descentTV.calculate(state);
+
+		c = ((IterableInterval<DoubleType>) state.getRegularizerDV().getDualVariable(0))
+			.cursor();
+		int i = 0;
+		while (c.hasNext()) {
+			assertEquals("Total Variation 3D differs", expectedTV3D[i++], c.next()
 				.get(), 0);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void tvHuberTest() {
+	public void tvHuber2DTest() {
 
 		final TVHuber2DAscent<DoubleType> ascentTVHuber = ops.op(
 			TVHuber2DAscent.class, SolverState.class, 0.5, 0.1);
@@ -84,9 +142,9 @@ public class RegularizerTests extends AbstractOpTest {
 
 		final SolverState<DoubleType> state =
 			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img) }, 1);
+				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
-		Cursor<DoubleType> c = img.cursor();
+		Cursor<DoubleType> c = img2D.cursor();
 
 		while (c.hasNext()) {
 			c.next();
@@ -101,14 +159,47 @@ public class RegularizerTests extends AbstractOpTest {
 			.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("TV-Huber differs", expectedTVHuber[i++], c.next()
+			assertEquals("TV-Huber differs", expectedTVHuber2D[i++], c.next()
+				.get(), 0);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void tvHuber3DTest() {
+
+		final TVHuber3DAscent<DoubleType> ascentTVHuber = ops.op(
+			TVHuber3DAscent.class, SolverState.class, 0.5, 0.1);
+		final TVHuber3DDescent<DoubleType> descentTVHuber = ops.op(
+			TVHuber3DDescent.class, SolverState.class, 0.25);
+
+		final SolverState<DoubleType> state =
+			new DefaultSolverState<DoubleType>(ops,
+				new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
+		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
+		Cursor<DoubleType> c = img3D.cursor();
+
+		while (c.hasNext()) {
+			c.next();
+			ra.setPosition(c);
+			ra.get().set(c.get().get());
+		}
+
+		ascentTVHuber.calculate(state);
+		descentTVHuber.calculate(state);
+
+		c = ((IterableInterval<DoubleType>) state.getIntermediateResult(0))
+			.cursor();
+		int i = 0;
+		while (c.hasNext()) {
+			assertEquals("TV-Huber differs", expectedTVHuber3D[i++], c.next()
 				.get(), 0);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void tgvTest() {
+	public void tgv2DTest() {
 
 		final TGV2DAscent<DoubleType> ascentTVHuber = ops.op(TGV2DAscent.class,
 			SolverState.class, 0.5, 0.1);
@@ -116,9 +207,9 @@ public class RegularizerTests extends AbstractOpTest {
 			TGV2DDescent.class, SolverState.class, 0.25);
 
 		final SolverState<DoubleType> state = new TGVSolverState<DoubleType>(
-			ops, new RandomAccessibleInterval[] { ops.create().img(img) }, 1);
+			ops, new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
-		Cursor<DoubleType> c = img.cursor();
+		Cursor<DoubleType> c = img2D.cursor();
 
 		while (c.hasNext()) {
 			c.next();
@@ -133,7 +224,39 @@ public class RegularizerTests extends AbstractOpTest {
 			.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("TV-Huber differs", expectedTGV[i++], c.next().get(),
+			assertEquals("TGV 2D differs", expectedTGV2D[i++], c.next().get(),
+				0);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void tgv3DTest() {
+
+		final TGV2DAscent<DoubleType> ascentTVHuber = ops.op(TGV2DAscent.class,
+			SolverState.class, 0.5, 0.1);
+		final TGV2DDescent<DoubleType> descentTVHuber = ops.op(
+			TGV2DDescent.class, SolverState.class, 0.25);
+
+		final SolverState<DoubleType> state = new TGVSolverState<DoubleType>(
+			ops, new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
+		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
+		Cursor<DoubleType> c = img3D.cursor();
+
+		while (c.hasNext()) {
+			c.next();
+			ra.setPosition(c);
+			ra.get().set(c.get().get());
+		}
+
+		ascentTVHuber.calculate(state);
+		descentTVHuber.calculate(state);
+
+		c = ((IterableInterval<DoubleType>) state.getIntermediateResult(0))
+			.cursor();
+		int i = 0;
+		while (c.hasNext()) {
+			assertEquals("TGV 3D differs", expectedTGV3D[i++], c.next().get(),
 				0);
 		}
 	}

@@ -30,7 +30,7 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			DefaultForwardDifference.class, img, 0,
+			DefaultForwardDifference.class, img2D, 0,
 			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
 				.cursor();
 		int i = 0;
@@ -45,13 +45,29 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 
 		@SuppressWarnings("unchecked")
 		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
-			DefaultForwardDifference.class, img, 1,
+			DefaultForwardDifference.class, img2D, 1,
 			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
 			assertEquals("GradientY differs", forwardDifferenceY[i++], c.next()
 				.get(), 0);
+		}
+	}
+	
+	@Test
+	public void forwardDifferenceX3DTest() {
+
+		@SuppressWarnings("unchecked")
+		final Cursor<DoubleType> c = ((Img<DoubleType>) ops.run(
+			DefaultForwardDifference.class, img3D, 0,
+			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>()))
+				.cursor();
+		int i = 0;
+		while (c.hasNext()) {
+			System.out.println(c.next().get() + ",");
+//			assertEquals("GradientX differs", forwardDifferenceX[i++], c.next()
+//				.get(), 0);
 		}
 	}
 }
