@@ -62,8 +62,13 @@ public abstract class AbstractDeconvoltuion<T extends RealType<T>> extends
 		for (int i = 0; i < kernel.length; i++) {
 			ascentConvolver[i] = ops.op(FastConvolver.class, input[i],
 				kernel[i]);
-			descentConvolver[i] = ops.op(FastConvolver.class, input[i], Views
-				.invertAxis(Views.invertAxis(ops.copy().rai(kernel[0]), 0), 1));
+			if (kernel[i].numDimensions() == 2) {
+				descentConvolver[i] = ops.op(FastConvolver.class, input[i], Views
+					.invertAxis(Views.invertAxis(ops.copy().rai(kernel[i]), 0), 1));
+			} else if (kernel[i].numDimensions() == 3) {
+				descentConvolver[i] = ops.op(FastConvolver.class, input[i],
+						Views.invertAxis(Views.invertAxis(Views.invertAxis(ops.copy().rai(kernel[i]), 0), 1), 2));
+			}
 		}
 
 		final CostFunction<T> cf = getCostFunction(input, ascentConvolver,
