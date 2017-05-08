@@ -43,7 +43,7 @@ public class Examples3D {
 
 	public static void main(String[] args) {
 		Examples3D ex = new Examples3D();
-		final int numIts = 100;
+		final int numIts = 200;
 		ex.showIJ();
 		// Denoising
 //		 ImageJFunctions.show(ex.getNoisyImgs()[0]);
@@ -93,7 +93,7 @@ public class Examples3D {
 //		 numIts));
 
 		// Deconvolution
-		ImageJFunctions.show(ex.getConvolvedImg0()[0]);
+//		ImageJFunctions.show(ex.getConvolvedImg0()[0]);
 //		ImageJFunctions.show(ex.getConvolvedImgs()[1]);
 //		// L1 costfunction
 		ImageJFunctions.show(ex.deconvolutionL1TV3D(ex.getConvolvedImgs(), ex
@@ -204,7 +204,7 @@ public class Examples3D {
 
 		long t = System.currentTimeMillis();
 		final Img<FloatType> result = (Img<FloatType>) ops.run(
-			TVL1Denoising3D.class, imgs, numIts, 0.9);
+			TVL1Denoising3D.class, imgs, numIts, 0.1);
 		t = System.currentTimeMillis() - t;
 		System.out.println("TVL1-Denoising [" + imgs[0].dimension(0) + ", " +
 			imgs[0].dimension(1) + "]: " + t / 1000.0 + "sec");

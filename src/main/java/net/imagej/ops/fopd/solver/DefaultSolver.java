@@ -5,6 +5,7 @@ import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
 import net.imagej.ops.fopd.costfunction.CostFunction;
+import net.imagej.ops.fopd.helper.AveragePerPixelDifference;
 import net.imagej.ops.fopd.helper.Default01Clipper;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndIIToRAIParallel;
@@ -13,6 +14,8 @@ import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.computer.UnaryComputerOp;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
+import net.imagej.ops.special.function.BinaryFunctionOp;
+import net.imagej.ops.special.function.Functions;
 import net.imagej.ops.special.inplace.Inplaces;
 import net.imagej.ops.special.inplace.UnaryInplaceOp;
 import net.imglib2.IterableInterval;
@@ -20,6 +23,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -66,6 +70,8 @@ public class DefaultSolver<T extends RealType<T>>
 
 	private Converter<T, T> converter;
 
+	private BinaryFunctionOp<RandomAccessibleInterval, RandomAccessibleInterval, double[]> avgDifference;
+
 	@SuppressWarnings("unchecked")
 	public RandomAccessibleInterval<T> calculate(SolverState<T> input) {
 
@@ -76,7 +82,11 @@ public class DefaultSolver<T extends RealType<T>>
 		// only needed because of a matcher bug.
 		final RandomAccessibleInterval<T> tmp = (RandomAccessibleInterval<T>) ops.create()
 				.img(input.getIntermediateResult(0));
+		final RandomAccessibleInterval<T> oldResult = (RandomAccessibleInterval<T>) ops.create()
+				.img(input.getIntermediateResult(0)); 
 
+		double[] statistic = new double[3];
+		
 		for (int i = 0; i < numIterations; i++) {
 
 			regularizer.getAscent().calculate(input);
@@ -93,8 +103,11 @@ public class DefaultSolver<T extends RealType<T>>
 					Converters.convert(input.getIntermediateResult(0), converter, input.getRegularizerDV().getType()),
 					(IterableInterval<T>) input.getResultImage(0), tmp);
 
+			clipperMapper.mutate((IterableInterval<T>) tmp);
 			copyComputer.compute(tmp, input.getResultImage(0));
-			clipperMapper.mutate((IterableInterval<T>) input.getResultImage(0));
+			statistic = avgDifference.calculate(oldResult, input.getResultImage(0));
+			System.out.println("Change: min = " + statistic[0] + ", mean = " + statistic[1] + ", max = " + statistic[2] + ";");
+			copyComputer.compute(input.getResultImage(0), oldResult);
 		}
 		return input.getResultImage(0);
 	}
@@ -119,5 +132,8 @@ public class DefaultSolver<T extends RealType<T>>
 
 		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class, IterableInterval.class, UnaryInplaceOp.class);
 		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops, Default01Clipper.class, type));
+		
+		avgDifference = Functions.binary(ops, AveragePerPixelDifference.class, double[].class,
+				RandomAccessibleInterval.class, RandomAccessibleInterval.class);
 	}
 }
