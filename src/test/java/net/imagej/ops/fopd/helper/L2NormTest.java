@@ -140,7 +140,6 @@ public class L2NormTest extends AbstractOpTest {
 		for (int y = 0; y < result.dimension(1); y++) {
 			for (int x = 0; x < result.dimension(0); x++) {
 				ra.setPosition(new int[] { x, y });
-				System.out.println(ra.get().get() + ",");
 				if (x == 1 && y == 1) {
 					assertEquals("L2Norm 9D", 3, ra.get().get(), 0);
 				} else {

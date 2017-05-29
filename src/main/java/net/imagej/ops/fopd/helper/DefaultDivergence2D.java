@@ -1,19 +1,27 @@
 
 package net.imagej.ops.fopd.helper;
 
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.special.function.Functions;
 import net.imagej.ops.special.function.UnaryFunctionOp;
 import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
+import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.thread.ThreadService;
 
 /**
  * 2D implementation of {@link Divergence}.
@@ -30,6 +38,9 @@ public class DefaultDivergence2D<T extends RealType<T>> extends
 
 	@Parameter
 	private OpService ops;
+	
+	@Parameter
+	private ThreadService ts;
 
 	/**
 	 * {@link BackwardDifference} computer along first dimension.
@@ -51,14 +62,79 @@ public class DefaultDivergence2D<T extends RealType<T>> extends
 	}
 
 	@SuppressWarnings("unchecked")
-	public void compute(RandomAccessibleInterval<T>[] input,
-		RandomAccessibleInterval<T> output)
+	public void compute(final RandomAccessibleInterval<T>[] input,
+		final RandomAccessibleInterval<T> output)
 	{
 		if (bdComputerX == null || bdComputerY == null) {
 			init2(input);
 		}
-		add2(bdComputerX.calculate(input[0]), bdComputerY.calculate(input[1]),
-			output);
+		long dimensionMax = Long.MIN_VALUE;
+		int dimensionArgMax = -1;
+
+		int nDim = input[0].numDimensions();
+		for ( int d = 0; d < nDim; ++d )
+		{
+			final long size = input[0].dimension( d );
+			if ( size > dimensionMax )
+			{
+				dimensionMax = size;
+				dimensionArgMax = d;
+			}
+		}
+
+		final long stepSize = Math.max( dimensionMax / Runtime.getRuntime().availableProcessors(), 1 );
+		final int numChunks = (int) (dimensionMax / stepSize);
+
+		final ArrayList<Future<?>> futures = new ArrayList<Future<?>>();
+
+			for (int i = 0 ; i < numChunks - 1; i++)
+		{
+			final long currentMin = i * stepSize;
+			final long currentMax = currentMin + stepSize - 1;
+			final long[] mins = new long[ nDim ];
+			final long[] maxs = new long[ nDim ];
+			input[0].min( mins );
+			input[0].max( maxs );
+			mins[ dimensionArgMax ] = currentMin;
+			maxs[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentInterval = Views.interval( output, new FinalInterval( mins, maxs ) );
+			
+			futures.add(ts.run(new Runnable() {
+				
+				public void run() {
+					add2(bdComputerX.calculate(input[0]), bdComputerY.calculate(input[1]), currentInterval);
+				}
+			}));
+			
+		}
+			final long currentMin = (numChunks - 1) * stepSize;
+			final long currentMax = currentMin + stepSize - 1;
+			final long[] mins = new long[ nDim ];
+			final long[] maxs = new long[ nDim ];
+			input[0].min( mins );
+			input[0].max( maxs );
+			mins[ dimensionArgMax ] = currentMin;
+			maxs[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentInterval = Views.interval( output, new FinalInterval( mins, maxs ) );
+		futures.add(ts.run(new Runnable() {
+			
+			public void run() {
+				add2(bdComputerX.calculate(input[0]), bdComputerY.calculate(input[1]), currentInterval);
+			}
+		}));
+		
+		
+		for (final Future<?> future : futures) {
+			try {
+				future.get();
+			}
+			catch (final InterruptedException exc) {
+				throw new RuntimeException(exc);
+			}
+			catch (final ExecutionException exc) {
+				throw new RuntimeException(exc);
+			}
+		}
 	}
 
 	private void init2(final RandomAccessibleInterval<T>[] input) {

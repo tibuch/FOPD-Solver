@@ -19,11 +19,14 @@ import org.junit.Test;
  */
 public class ForwardDifferenceTest extends AbstractOpTest {
 
-	private static double[] forwardDifferenceX = new double[] { -1.0, 1.0, 0.0,
+	private static double[] forwardDifferenceX2D = new double[] { -1.0, 1.0, 0.0,
 		0.0, 0.0, 0.0, -1.0, 1.0, 0.0 };
 
-	private static double[] forwardDifferenceY = new double[] { 0.0, 1.0, 0.0,
+	private static double[] forwardDifferenceY2D = new double[] { 0.0, 1.0, 0.0,
 		0.0, -1.0, 0.0, 0.0, 0.0, 0.0 };
+
+	private static double[] forwardDifferenceX3D = new double[] { -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, -1.0,
+			1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0 };
 
 	@Test
 	public void forwardDifferenceXTest() {
@@ -35,7 +38,7 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("GradientX differs", forwardDifferenceX[i++], c.next()
+			assertEquals("GradientX differs", forwardDifferenceX2D[i++], c.next()
 				.get(), 0);
 		}
 	}
@@ -50,7 +53,7 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			assertEquals("GradientY differs", forwardDifferenceY[i++], c.next()
+			assertEquals("GradientY differs", forwardDifferenceY2D[i++], c.next()
 				.get(), 0);
 		}
 	}
@@ -65,9 +68,8 @@ public class ForwardDifferenceTest extends AbstractOpTest {
 				.cursor();
 		int i = 0;
 		while (c.hasNext()) {
-			System.out.println(c.next().get() + ",");
-//			assertEquals("GradientX differs", forwardDifferenceX[i++], c.next()
-//				.get(), 0);
+			assertEquals("GradientX differs", forwardDifferenceX3D[i++], c.next()
+				.get(), 0);
 		}
 	}
 }
