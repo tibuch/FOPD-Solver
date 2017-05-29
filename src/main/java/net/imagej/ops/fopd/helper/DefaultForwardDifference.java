@@ -1,6 +1,11 @@
 
 package net.imagej.ops.fopd.helper;
 
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
 import net.imglib2.FinalInterval;
@@ -10,11 +15,13 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.outofbounds.OutOfBoundsFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.thread.ThreadService;
 
 /**
  * Implementation of {@link ForwardDifference} for the given dimension d.
@@ -39,6 +46,9 @@ public class DefaultForwardDifference<T extends RealType<T>> extends
 	@Parameter
 	private OpService ops;
 
+	@Parameter
+	private ThreadService ts;
+	
 	private FinalInterval interval;
 
 	@SuppressWarnings("unchecked")
@@ -48,17 +58,83 @@ public class DefaultForwardDifference<T extends RealType<T>> extends
 		return (RandomAccessibleInterval<T>) ops.create().img(input);
 	}
 
-	public void compute(RandomAccessibleInterval<T> input,
-		RandomAccessibleInterval<T> output)
+	public void compute(final RandomAccessibleInterval<T> input,
+		final RandomAccessibleInterval<T> output)
 	{
 
 		if (interval == null) {
 			init(input);
 		}
 
-		gradientForwardDifference(Views.interval(Views.extend(input, fac),
-			interval), output, dimension);
+		long dimensionMax = Long.MIN_VALUE;
+		int dimensionArgMax = -1;
 
+		int nDim = input.numDimensions();
+		for ( int d = 0; d < nDim; ++d )
+		{
+			final long size = input.dimension( d );
+			if ( d != dimension && size > dimensionMax )
+			{
+				dimensionMax = size;
+				dimensionArgMax = d;
+			}
+		}
+
+		final long stepSize = Math.max( dimensionMax / Runtime.getRuntime().availableProcessors(), 1 );
+		final int numChunks = (int) (dimensionMax / stepSize);
+
+		final ArrayList<Future<?>> futures = new ArrayList<Future<?>>();
+
+			for (int i = 0 ; i < numChunks - 1; i++)
+		{
+			final long currentMin = i * stepSize;
+			final long currentMax = currentMin + stepSize - 1;
+			final long[] mins = new long[ nDim ];
+			final long[] maxs = new long[ nDim ];
+			input.min( mins );
+			input.max( maxs );
+			mins[ dimensionArgMax ] = currentMin;
+			maxs[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentInterval = Views.interval( output, new FinalInterval( mins, maxs ) );
+			
+			futures.add(ts.run(new Runnable() {
+				
+				public void run() {
+					gradientForwardDifference(Views.interval(Views.extend(input, fac),
+							interval), currentInterval, dimension);
+				}
+			}));
+			
+		}
+			final long currentMin = (numChunks - 1) * stepSize;
+			final long currentMax = currentMin + stepSize - 1;
+			final long[] mins = new long[ nDim ];
+			final long[] maxs = new long[ nDim ];
+			input.min( mins );
+			input.max( maxs );
+			mins[ dimensionArgMax ] = currentMin;
+			maxs[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentInterval = Views.interval( output, new FinalInterval( mins, maxs ) );
+		futures.add(ts.run(new Runnable() {
+			
+			public void run() {
+				gradientForwardDifference(Views.interval(Views.extend(input, fac),
+						interval), currentInterval, dimension);
+			}
+		}));
+		
+		
+		for (final Future<?> future : futures) {
+			try {
+				future.get();
+			}
+			catch (final InterruptedException exc) {
+				throw new RuntimeException(exc);
+			}
+			catch (final ExecutionException exc) {
+				throw new RuntimeException(exc);
+			}
+		}
 	}
 
 	/**

@@ -1,12 +1,17 @@
 
 package net.imagej.ops.fopd.helper;
 
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops.Stats.Sum;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.hybrid.AbstractUnaryHybridCF;
 import net.imagej.ops.special.hybrid.BinaryHybridCF;
 import net.imagej.ops.transform.project.DefaultProjectParallel;
+import net.imglib2.FinalInterval;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
@@ -14,10 +19,12 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.thread.ThreadService;
 
 /**
  * Implementation of {@link L2Norm}.
@@ -34,6 +41,9 @@ public class DefaultL2Norm<T extends RealType<T>> extends
 	@Parameter
 	private OpService ops;
 
+	@Parameter
+	private ThreadService ts;
+	
 	private DefaultProjectParallel<T, T> projector;
 
 	private Converter<T, T> squareConverter;
@@ -50,25 +60,100 @@ public class DefaultL2Norm<T extends RealType<T>> extends
 	public void compute(final RandomAccessibleInterval<T>[] input,
 		final RandomAccessibleInterval<T> output)
 	{
-		int numDualVariables = input.length;
+		final int numDualVariables = input.length;
 
-		if (numDualVariables == 1) {
-			norm1D(input[0], output);
+		long dimensionMax = Long.MIN_VALUE;
+		int dimensionArgMax = -1;
+
+		int nDim = input[0].numDimensions();
+		for ( int d = 0; d < nDim; ++d )
+		{
+			final long size = input[0].dimension( d );
+			if ( size > dimensionMax )
+			{
+				dimensionMax = size;
+				dimensionArgMax = d;
+			}
 		}
-		else if (numDualVariables == 2) {
-			norm2D(input[0], input[1], output);
+
+		final long stepSize = Math.max( dimensionMax / Runtime.getRuntime().availableProcessors(), 1 );
+		final int numChunks = (int) (dimensionMax / stepSize);
+
+		final ArrayList<Future<?>> futures = new ArrayList<Future<?>>();
+
+			for (int i = 0 ; i < numChunks - 1; i++)
+		{
+			final long currentMin = i * stepSize;
+			final long currentMax = currentMin + stepSize - 1;
+			final long[] mins = new long[ nDim ];
+			final long[] maxs = new long[ nDim ];
+			input[0].min( mins );
+			input[0].max( maxs );
+			mins[ dimensionArgMax ] = currentMin;
+			maxs[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentInterval = Views.interval( output, new FinalInterval( mins, maxs ) );
+			
+			futures.add(ts.run(new Runnable() {
+				
+				public void run() {
+					if (numDualVariables == 1) {
+						norm1D(input[0], currentInterval);
+					} else if (numDualVariables == 2) {
+						norm2D(input[0], input[1], currentInterval);
+					} else if (numDualVariables == 3) {
+						norm3D(input[0], input[1], input[2], currentInterval);
+					} else if (numDualVariables == 4) {
+						norm4D(input[0], input[1], input[2], input[3], currentInterval);
+					} else if (numDualVariables == 9) {
+						norm9D(input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7], input[8],
+								currentInterval);
+					} else {
+						normND(input, currentInterval);
+					}
+				}
+			}));
+			
 		}
-		else if (numDualVariables == 3) {
-			norm3D(input[0], input[1], input[2], output);
-		}
-		else if (numDualVariables == 4) {
-			norm4D(input[0], input[1], input[2], input[3], output);
-		}
-		else if (numDualVariables == 9) {
-			norm9D(input[0], input[1], input[2], input[3], input[4], 
-					input[5], input[6], input[7], input[8], output);
-		} else {
-			normND(input, output);
+			final long currentMin = (numChunks - 1) * stepSize;
+			final long currentMax = currentMin + stepSize - 1;
+			final long[] mins = new long[ nDim ];
+			final long[] maxs = new long[ nDim ];
+			input[0].min( mins );
+			input[0].max( maxs );
+			mins[ dimensionArgMax ] = currentMin;
+			maxs[ dimensionArgMax ] = currentMax;
+			final IntervalView< T > currentInterval = Views.interval( output, new FinalInterval( mins, maxs ) );
+		futures.add(ts.run(new Runnable() {
+			
+			public void run() {
+				if (numDualVariables == 1) {
+					norm1D(input[0], currentInterval);
+				} else if (numDualVariables == 2) {
+					norm2D(input[0], input[1], currentInterval);
+				} else if (numDualVariables == 3) {
+					norm3D(input[0], input[1], input[2], currentInterval);
+				} else if (numDualVariables == 4) {
+					norm4D(input[0], input[1], input[2], input[3], currentInterval);
+				} else if (numDualVariables == 9) {
+					norm9D(input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7], input[8],
+							currentInterval);
+				} else {
+					normND(input, currentInterval);
+				}
+			}
+		}));
+		
+		
+		for (final Future<?> future : futures) {
+			try {
+				future.get();
+			}
+			catch (final InterruptedException exc) {
+				throw new RuntimeException(exc);
+			}
+			catch (final ExecutionException exc) {
+				throw new RuntimeException(exc);
+			}
 		}
 	}
 
@@ -466,33 +551,31 @@ public class DefaultL2Norm<T extends RealType<T>> extends
 							s8.move(shiftback[d], d);
 							s9.move(shiftback[d], d);
 							if (d == n - 1) return;
-						}
-						else {
-							result.fwd(d);
-							s1.fwd(d);
-							s2.fwd(d);
-							s3.fwd(d);
-							s4.fwd(d);
-							s5.fwd(d);
-							s6.fwd(d);
-							s7.fwd(d);
-							s8.fwd(d);
-							s9.fwd(d);
-							break;
-						}
-				}
-				else {
-					result.fwd(0);
-					s1.fwd(0);
-					s2.fwd(0);
-					s3.fwd(0);
-					s4.fwd(0);
-					s5.fwd(0);
-					s6.fwd(0);
-					s7.fwd(0);
-					s8.fwd(0);
-					s9.fwd(0);
-				}
+						} else {
+						result.fwd(d);
+						s1.fwd(d);
+						s2.fwd(d);
+						s3.fwd(d);
+						s4.fwd(d);
+						s5.fwd(d);
+						s6.fwd(d);
+						s7.fwd(d);
+						s8.fwd(d);
+						s9.fwd(d);
+						break;
+					}
+			} else {
+				result.fwd(0);
+				s1.fwd(0);
+				s2.fwd(0);
+				s3.fwd(0);
+				s4.fwd(0);
+				s5.fwd(0);
+				s6.fwd(0);
+				s7.fwd(0);
+				s8.fwd(0);
+				s9.fwd(0);
 			}
 		}
+	}
 }
