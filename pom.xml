@@ -73,6 +73,7 @@ Ref.: Chambolle, Antonin, and Thomas Pock. &quot;A first-order primal-dual algor
 		<package-name>net.imagej.ops.fopd</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Tim-Oliver Buchholz, University of Konstanz</license.copyrightOwners>
+		<imagej-ops.version>0.38.1-SNAPSHOT</imagej-ops.version>
 	</properties>
 
 	<repositories>
@@ -98,6 +99,10 @@ Ref.: Chambolle, Antonin, and Thomas Pock. &quot;A first-order primal-dual algor
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
 		</dependency>
 	</dependencies>
 	<ciManagement>
