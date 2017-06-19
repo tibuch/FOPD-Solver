@@ -1,51 +1,106 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>net.imagej</groupId>
-  <artifactId>fopd</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>16.1.0</version>
+		<relativePath />
+	</parent>
 
-  <name>FOPD-Solver</name>
-  <url>http://maven.apache.org</url>
+	<groupId>net.imagej</groupId>
+	<version>0.1.0-SNAPSHOT</version>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<name>First-Order Primal-Dual Solver</name>
+	<description>An implementation of the first-order primal-dual solver proposed by Antonin Chamoblle and Thomas Pock.
+Ref.: Chambolle, Antonin, and Thomas Pock. &quot;A first-order primal-dual algorithm for convex problems with applications to imaging.&quot; Journal of Mathematical Imaging and Vision 40.1 (2011): 120-145.</description>
+	<url>http://mycompany.com/imagej/gauss-filtering/</url>
+	<inceptionYear>2017</inceptionYear>
+	<organization>
+		<name>University of Konstanz</name>
+		<url>https://www.uni-konstanz.de/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-  	<repositories>
+	<developers>
+		<developer>
+			<id>tibuch</id>
+			<name>Tim-Oliver Buchholz</name>
+			<url>http://imagej.net/User:Tibuch</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Tim-Oliver Buchholz</name>
+			<url>http://imagej.net/User:Tibuch</url>
+			<properties><id>tibuch</id></properties>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/tibuch/FOPD-Solver/</connection>
+		<developerConnection>scm:git:git@github.com:tibuch/FOPD-Solver/</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/tibuch/FOPD-Solver/</url>
+	</scm>
+
+	<properties>
+		<package-name>net.imagej.ops.fopd</package-name>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>Tim-Oliver Buchholz, University of Konstanz</license.copyrightOwners>
+	</properties>
+
+	<repositories>
 		<repository>
 			<id>imagej.public</id>
 			<url>http://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-    </dependency>
-    <dependency>
-    	<groupId>net.imagej</groupId>
-    	<artifactId>imagej</artifactId>
-    	<version>2.0.0-rc-60-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-    	<groupId>net.imagej</groupId>
-    	<artifactId>imagej-ops</artifactId>
-    	<version>0.36.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-    <groupId>net.imglib2</groupId>
-    <artifactId>imglib2</artifactId>
-    <version>4.0.0</version>
-</dependency>
-    <dependency>
-    	<groupId>net.imglib2</groupId>
-    	<artifactId>imglib2-ij</artifactId>
-    	<version>2.0.0-beta-37-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+	<issueManagement>
+		<url>https://github.com/tibuch/FOPD-Solver/issues</url>
+	</issueManagement>
+	<artifactId>FirstOderPrimalDualSolver</artifactId>
+	<dependencies>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-ops</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+	</dependencies>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
 </project>
