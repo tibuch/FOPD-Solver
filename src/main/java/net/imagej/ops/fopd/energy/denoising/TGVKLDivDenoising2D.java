@@ -41,6 +41,8 @@ import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
+import java.util.List;
+
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -53,7 +55,7 @@ import org.scijava.plugin.Plugin;
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  */
-@Plugin(type = UnaryHybridCF.class)
+@Plugin(type = UnaryHybridCF.class, menuPath = "Plugin>First-Order Primal-Dual Solver>Denoising>TGV-KLDiv (2D)")
 public class TGVKLDivDenoising2D<T extends RealType<T>> extends AbstractDenoising<T> {
 
 	@Parameter
@@ -63,7 +65,7 @@ public class TGVKLDivDenoising2D<T extends RealType<T>> extends AbstractDenoisin
 	private double beta;
 
 	@Override
-	SolverState<T> getSolverState(RandomAccessibleInterval<T>[] input) {
+	SolverState<T> getSolverState(List<RandomAccessibleInterval<T>> input) {
 		return new TGVSolverState<T>(ops, input, 1);
 	}
 
@@ -73,8 +75,8 @@ public class TGVKLDivDenoising2D<T extends RealType<T>> extends AbstractDenoisin
 	}
 
 	@Override
-	CostFunction<T> getCostFunction(RandomAccessibleInterval<T>[] input, LinearOperator<T>[] ascentOperator,
-			LinearOperator<T>[] descentOperator) {
-		return new KLDivergence<T>(ops, input, ascentOperator, descentOperator, (1.0 / (4.0 + input.length)));
+	CostFunction<T> getCostFunction(List<RandomAccessibleInterval<T>> input, List<LinearOperator<T>> ascentOperator,
+			List<LinearOperator<T>> descentOperator) {
+		return new KLDivergence<T>(ops, input, ascentOperator, descentOperator, (1.0 / (4.0 + input.size())));
 	}
 }

@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.regularizer.tgv.solver;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.fopd.solver.AbstractSolverState;
@@ -48,10 +50,10 @@ public class TGVMinimizer2DSolverState<T extends RealType<T>> extends
 {
 
 	public TGVMinimizer2DSolverState(final OpService ops,
-		final RandomAccessibleInterval<T>[] images)
+		final List<RandomAccessibleInterval<T>> input)
 	{
-		super(ops, images, 2);
-		regularizerDV = new DualVariables<T>(ops, images[0], 3);
+		super(ops, input, 2);
+		regularizerDV = new DualVariables<T>(ops, input.get(0), 3);
 	}
 
 	@Override

@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.costfunction.kldivergence;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.AbstractCostFunction;
 import net.imagej.ops.fopd.operator.LinearOperator;
@@ -51,14 +53,14 @@ public class KLDivergence<T extends RealType<T>> extends
 
 	@SuppressWarnings("unchecked")
 	public KLDivergence(final OpService ops,
-		final RandomAccessibleInterval<T>[] image,
-		final LinearOperator<T>[] operatorAscent,
-		final LinearOperator<T>[] operatorDescent,
+		final List<RandomAccessibleInterval<T>> input,
+		final List<LinearOperator<T>> ascentOperator,
+		final List<LinearOperator<T>> descentOperator,
 		final double descentStepSize)
 	{
 		this.ascent = ops.op(KLDivergenceAscent.class, SolverState.class,
-			image, operatorAscent);
+			input, ascentOperator);
 		this.descent = ops.op(KLDivergenceDescent.class, SolverState.class,
-			operatorDescent, descentStepSize);
+			descentOperator, descentStepSize);
 	}
 }

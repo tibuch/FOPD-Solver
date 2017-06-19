@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.costfunction.squaredl2norm;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.AbstractCostFunction;
 import net.imagej.ops.fopd.operator.LinearOperator;
@@ -51,14 +53,14 @@ public class SquaredL2Norm<T extends RealType<T>> extends
 
 	@SuppressWarnings("unchecked")
 	public SquaredL2Norm(final OpService ops,
-		final RandomAccessibleInterval<T>[] input,
-		final LinearOperator<T>[] ascentConvolver,
-		final LinearOperator<T>[] descentConvolver,
+		final List<RandomAccessibleInterval<T>> input,
+		final List<LinearOperator<T>> ascentOperator,
+		final List<LinearOperator<T>> descentOperator,
 		final double descentStepSize)
 	{
 		this.ascent = ops.op(SquaredL2NormAscent.class, SolverState.class,
-			input, ascentConvolver);
+			input, ascentOperator);
 		this.descent = ops.op(SquaredL2NormDescent.class, SolverState.class,
-			descentConvolver, descentStepSize);
+			descentOperator, descentStepSize);
 	}
 }

@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.solver;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.regularizer.tgv.solver.TGVMinimizer2DSolverState;
 import net.imglib2.RandomAccessibleInterval;
@@ -48,11 +50,11 @@ public class TGVSolverState<T extends RealType<T>> extends
 	private TGVMinimizer2DSolverState<T> tgvState;
 
 	public TGVSolverState(final OpService ops,
-		final RandomAccessibleInterval<T>[] images, final int numResults)
+		final List<RandomAccessibleInterval<T>> input, final int numResults)
 	{
-		super(ops, images, numResults);
+		super(ops, input, numResults);
 
-		this.tgvState = new TGVMinimizer2DSolverState<T>(ops, images);
+		this.tgvState = new TGVMinimizer2DSolverState<T>(ops, input);
 	}
 
 	@Override

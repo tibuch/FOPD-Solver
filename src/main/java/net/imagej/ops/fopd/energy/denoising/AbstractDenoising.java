@@ -42,6 +42,9 @@ import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.scijava.plugin.Parameter;
 
 /**
@@ -56,7 +59,7 @@ import org.scijava.plugin.Parameter;
  * @param <T>
  */
 public abstract class AbstractDenoising<T extends RealType<T>> extends
-	AbstractUnaryFunctionOp<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>>
+	AbstractUnaryFunctionOp<List<RandomAccessibleInterval<T>>, RandomAccessibleInterval<T>>
 {
 
 	@Parameter
@@ -71,19 +74,19 @@ public abstract class AbstractDenoising<T extends RealType<T>> extends
 
 	@SuppressWarnings({ "unchecked" })
 	public RandomAccessibleInterval<T> calculate(
-		RandomAccessibleInterval<T>[] input)
+		List<RandomAccessibleInterval<T>> input)
 	{
 
-		final Regularizer<T> tgv = getRegularizer(input.length);
+		final Regularizer<T> tgv = getRegularizer(input.size());
 
-		final LinearOperator<T>[] ascentOperator =
-			new LinearOperator[input.length];
-		final LinearOperator<T>[] descentOperator =
-			new LinearOperator[input.length];
+		final List<LinearOperator<T>> ascentOperator =
+			new ArrayList<>();
+		final List<LinearOperator<T>> descentOperator =
+			new ArrayList<>();
 
-		for (int i = 0; i < input.length; i++) {
-			ascentOperator[i] = ops.op(Identity.class, input[i]);
-			descentOperator[i] = ops.op(Identity.class, input[i]);
+		for (int i = 0; i < input.size(); i++) {
+			ascentOperator.add(ops.op(Identity.class, input.get(i)));
+			descentOperator.add(ops.op(Identity.class, input.get(i)));
 		}
 
 		final CostFunction<T> cf = getCostFunction(input, ascentOperator,
@@ -98,13 +101,13 @@ public abstract class AbstractDenoising<T extends RealType<T>> extends
 	}
 
 	abstract SolverState<T> getSolverState(
-		final RandomAccessibleInterval<T>[] input);
+		final List<RandomAccessibleInterval<T>> input);
 
 	abstract Regularizer<T> getRegularizer(final double numViews);
 
 	abstract CostFunction<T> getCostFunction(
-		final RandomAccessibleInterval<T>[] input,
-		final LinearOperator<T>[] ascentOperator,
-		final LinearOperator<T>[] descentOperator);
+		final List<RandomAccessibleInterval<T>> input,
+		final List<LinearOperator<T>> ascentOperator,
+		final List<LinearOperator<T>> descentOperator);
 
 }

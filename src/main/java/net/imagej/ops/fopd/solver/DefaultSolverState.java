@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.solver;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -45,8 +47,8 @@ public class DefaultSolverState<T extends RealType<T>> extends
 {
 
 	public DefaultSolverState(final OpService ops,
-		final RandomAccessibleInterval<T>[] images, final int numResults)
+		final List<RandomAccessibleInterval<T>> input, final int numResults)
 	{
-		super(ops, images, numResults);
+		super(ops, input, numResults);
 	}
 }

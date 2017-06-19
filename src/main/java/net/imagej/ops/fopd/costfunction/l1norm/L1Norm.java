@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.costfunction.l1norm;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.costfunction.AbstractCostFunction;
 import net.imagej.ops.fopd.operator.LinearOperator;
@@ -49,14 +51,14 @@ public class L1Norm<T extends RealType<T>> extends AbstractCostFunction<T> {
 
 	@SuppressWarnings("unchecked")
 	public L1Norm(final OpService ops,
-		final RandomAccessibleInterval<T>[] input,
-		final LinearOperator<T>[] operatorAscent,
-		final LinearOperator<T>[] operatorDescent,
+		final List<RandomAccessibleInterval<T>> input,
+		final List<LinearOperator<T>> ascentOperator,
+		final List<LinearOperator<T>> descentOperator,
 		final double descentStepSize)
 	{
 		this.ascent = ops.op(L1NormAscent.class, SolverState.class, input,
-			operatorAscent);
+			ascentOperator);
 		this.descent = ops.op(L1NormDescent.class, SolverState.class,
-			operatorDescent, descentStepSize);
+			descentOperator, descentStepSize);
 	}
 }

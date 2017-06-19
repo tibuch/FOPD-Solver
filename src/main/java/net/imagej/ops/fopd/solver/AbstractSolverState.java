@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.solver;
 
+import java.util.List;
+
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.DualVariables;
 import net.imglib2.RandomAccessibleInterval;
@@ -52,20 +54,20 @@ public class AbstractSolverState<T extends RealType<T>> implements SolverState<T
 	protected int numViews;
 
 	@SuppressWarnings("unchecked")
-	public AbstractSolverState(final OpService ops, final RandomAccessibleInterval<T>[] images, final int numResults) {
-		this.regularizerDV = new DualVariables<T>(ops, images[0], numResults * images[0].numDimensions());
-		this.costFunctionDV = new DualVariables<T>(ops, images[0], images.length);
-		this.numViews = images.length;
+	public AbstractSolverState(final OpService ops, final List<RandomAccessibleInterval<T>> input, final int numResults) {
+		this.regularizerDV = new DualVariables<T>(ops, input.get(0), numResults * input.get(0).numDimensions());
+		this.costFunctionDV = new DualVariables<T>(ops, input.get(0), input.size());
+		this.numViews = input.size();
 
 		this.intermediateResults = new RandomAccessibleInterval[numResults];
 		this.results = new RandomAccessibleInterval[numResults];
 
 		for (int i = 0; i < numResults; i++) {
-			intermediateResults[i] = (RandomAccessibleInterval<T>) ops.create().img(images[0]);
-			results[i] = (RandomAccessibleInterval<T>) ops.create().img(images[0]);
+			intermediateResults[i] = (RandomAccessibleInterval<T>) ops.create().img(input.get(0));
+			results[i] = (RandomAccessibleInterval<T>) ops.create().img(input.get(0));
 		}
 
-		this.type = images[0].randomAccess().get().createVariable();
+		this.type = input.get(0).randomAccess().get().createVariable();
 	}
 
 	public RandomAccessibleInterval<T> getResultImage(final int i) {
