@@ -32,6 +32,9 @@ package net.imagej.ops.fopd.costfunction;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergenceAscent;
 import net.imagej.ops.fopd.costfunction.kldivergence.KLDivergenceDescent;
@@ -78,9 +81,11 @@ public class CostFunctionTests extends AbstractOpTest {
 			L1NormDescent.class, SolverState.class, ops.op(Identity.class,
 				img2D), 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img2D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = posNegImg2D.cursor();
 
@@ -113,9 +118,11 @@ public class CostFunctionTests extends AbstractOpTest {
 			KLDivergenceDescent.class, SolverState.class, ops.op(
 				Identity.class, img2D), 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img2D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = posNegImg2D.cursor();
 
@@ -148,9 +155,11 @@ public class CostFunctionTests extends AbstractOpTest {
 			SquaredL2NormDescent.class, SolverState.class, ops.op(
 				Identity.class, img2D), 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img2D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = posNegImg2D.cursor();
 

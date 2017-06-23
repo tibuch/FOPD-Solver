@@ -32,6 +32,9 @@ package net.imagej.ops.fopd.regularizer;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.imagej.ops.fopd.AbstractOpTest;
 import net.imagej.ops.fopd.regularizer.tgv.TGV2DAscent;
 import net.imagej.ops.fopd.regularizer.tgv.TGV2DDescent;
@@ -105,9 +108,11 @@ public class RegularizerTests extends AbstractOpTest {
 		final TotalVariation2DDescent<DoubleType> descentTV = ops.op(
 			TotalVariation2DDescent.class, SolverState.class, 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img2D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img2D.cursor();
 
@@ -137,9 +142,11 @@ public class RegularizerTests extends AbstractOpTest {
 		final TotalVariation3DDescent<DoubleType> descentTV = ops.op(
 			TotalVariation3DDescent.class, SolverState.class, 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img3D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img3D.cursor();
 
@@ -169,9 +176,11 @@ public class RegularizerTests extends AbstractOpTest {
 		final TVHuber2DDescent<DoubleType> descentTVHuber = ops.op(
 			TVHuber2DDescent.class, SolverState.class, 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img2D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img2D.cursor();
 
@@ -202,9 +211,11 @@ public class RegularizerTests extends AbstractOpTest {
 		final TVHuber3DDescent<DoubleType> descentTVHuber = ops.op(
 			TVHuber3DDescent.class, SolverState.class, 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img3D));
+		
 		final SolverState<DoubleType> state =
-			new DefaultSolverState<DoubleType>(ops,
-				new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
+			new DefaultSolverState<DoubleType>(ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img3D.cursor();
 
@@ -235,8 +246,11 @@ public class RegularizerTests extends AbstractOpTest {
 		final TGV2DDescent<DoubleType> descentTVHuber = ops.op(
 			TGV2DDescent.class, SolverState.class, 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img2D));
+		
 		final SolverState<DoubleType> state = new TGVSolverState<DoubleType>(
-			ops, new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
+			ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img2D.cursor();
 
@@ -267,8 +281,11 @@ public class RegularizerTests extends AbstractOpTest {
 		final TGV2DDescent<DoubleType> descentTVHuber = ops.op(
 			TGV2DDescent.class, SolverState.class, 0.25);
 
+		final List<RandomAccessibleInterval<DoubleType>> input = new ArrayList<>();
+		input.add(ops.create().img(img3D));
+		
 		final SolverState<DoubleType> state = new TGVSolverState<DoubleType>(
-			ops, new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
+			ops, input, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img3D.cursor();
 

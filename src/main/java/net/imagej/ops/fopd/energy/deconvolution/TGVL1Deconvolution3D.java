@@ -30,6 +30,8 @@
 
 package net.imagej.ops.fopd.energy.deconvolution;
 
+import java.util.List;
+
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -64,7 +66,7 @@ public class TGVL1Deconvolution3D<T extends RealType<T>> extends AbstractDeconvo
 	private double beta;
 
 	@Override
-	SolverState<T> getSolverState(RandomAccessibleInterval<T>[] input) {
+	SolverState<T> getSolverState(List<RandomAccessibleInterval<T>> input) {
 		return new TGVSolverState<T>(ops, input, 1);
 	}
 
@@ -74,9 +76,9 @@ public class TGVL1Deconvolution3D<T extends RealType<T>> extends AbstractDeconvo
 	}
 
 	@Override
-	CostFunction<T> getCostFunction(RandomAccessibleInterval<T>[] input, LinearOperator<T>[] ascentConvolver,
-			LinearOperator<T>[] descentConvolver) {
-		return new L1Norm<T>(ops, input, ascentConvolver, descentConvolver, (1.0 / (6.0 + input.length)));
+	CostFunction<T> getCostFunction(List<RandomAccessibleInterval<T>> input, List<LinearOperator<T>> ascentConvolver,
+			List<LinearOperator<T>> descentConvolver) {
+		return new L1Norm<T>(ops, input, ascentConvolver, descentConvolver, (1.0 / (6.0 + input.size())));
 	}
 
 }

@@ -41,6 +41,8 @@ import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
+import java.util.List;
+
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -61,7 +63,7 @@ public class TVKLDivDeconvolution2D<T extends RealType<T>> extends AbstractDecon
 	private double lambda;
 
 	@Override
-	SolverState<T> getSolverState(RandomAccessibleInterval<T>[] input) {
+	SolverState<T> getSolverState(List<RandomAccessibleInterval<T>> input) {
 		return new DefaultSolverState<T>(ops, input, 1);
 	}
 
@@ -71,8 +73,8 @@ public class TVKLDivDeconvolution2D<T extends RealType<T>> extends AbstractDecon
 	}
 
 	@Override
-	CostFunction<T> getCostFunction(RandomAccessibleInterval<T>[] input, LinearOperator<T>[] ascentConvolver,
-			LinearOperator<T>[] descentConvolver) {
-		return new KLDivergence<T>(ops, input, ascentConvolver, descentConvolver, (1.0 / (4.0 + input.length)));
+	CostFunction<T> getCostFunction(List<RandomAccessibleInterval<T>> input, List<LinearOperator<T>> ascentConvolver,
+			List<LinearOperator<T>> descentConvolver) {
+		return new KLDivergence<T>(ops, input, ascentConvolver, descentConvolver, (1.0 / (4.0 + input.size())));
 	}
 }

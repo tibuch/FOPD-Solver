@@ -92,14 +92,14 @@ public abstract class AbstractDeconvoltuion<T extends RealType<T>> extends
 			new ArrayList<>();
 
 		for (int i = 0; i < kernel.size(); i++) {
-			ascentConvolver[i] = ops.op(FastConvolver.class, input.get(i),
-				kernel.get(i));
+			ascentConvolver.add(ops.op(FastConvolver.class, input.get(i),
+				kernel.get(i)));
 			if (kernel.get(i).numDimensions() == 2) {
-				descentConvolver[i] = ops.op(FastConvolver.class, input.get(i), Views
-					.invertAxis(Views.invertAxis(ops.copy().rai(kernel.get(i)), 0), 1));
+				descentConvolver.add(ops.op(FastConvolver.class, input.get(i), Views
+					.invertAxis(Views.invertAxis(ops.copy().rai(kernel.get(i)), 0), 1)));
 			} else if (kernel.get(i).numDimensions() == 3) {
-				descentConvolver[i] = ops.op(FastConvolver.class, input.get(i),
-						Views.invertAxis(Views.invertAxis(Views.invertAxis(ops.copy().rai(kernel.get(i)), 0), 1), 2));
+				descentConvolver.add(ops.op(FastConvolver.class, input.get(i),
+						Views.invertAxis(Views.invertAxis(Views.invertAxis(ops.copy().rai(kernel.get(i)), 0), 1), 2)));
 			}
 		}
 

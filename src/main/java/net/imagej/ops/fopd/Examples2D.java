@@ -78,11 +78,11 @@ public class Examples2D {
 		final int numIts = 100;
 		ex.showIJ();
 		// Denoising
-		// ImageJFunctions.show(ex.getNoisyImgs()[0]);
+		 ImageJFunctions.show(ex.getNoisyImgs()[0]);
 		// ImageJFunctions.show(ex.getNoisyImgs()[1]);
 		// L1 costfunction
 		// ImageJFunctions.show(ex.denoisingL1TV2D(ex.getNoisyImgs(), numIts));
-		// ImageJFunctions.show(ex.denoisingL1TV2D(ex.getNoisyImg0(), numIts));
+		 ImageJFunctions.show(ex.denoisingL1TV2D(ex.getNoisyImg0(), numIts));
 
 		// ImageJFunctions.show(ex.denoisingL1TVHuber2D(ex.getNoisyImgs(),
 		// numIts));
@@ -125,15 +125,15 @@ public class Examples2D {
 		// numIts));
 
 		// Deconvolution
-		ImageJFunctions.show(ex.getConvolvedImgs()[0]);
+//		ImageJFunctions.show(ex.getConvolvedImgs()[0]);
 //		ImageJFunctions.show(ex.getConvolvedImgs()[1]);
 		// L1 costfunction
 //		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImgs(), ex
 //			.getKernels(), numIts));
-		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImg0(), ex
-			.getKernel0(), numIts));
-		
-		ImageJFunctions.show(ex.rlDeconvolution(ex.getConvolvedImg0(), ex.getKernel0(), numIts));
+//		ImageJFunctions.show(ex.deconvolutionL1TV2D(ex.getConvolvedImg0(), ex
+//			.getKernel0(), numIts));
+//		
+//		ImageJFunctions.show(ex.rlDeconvolution(ex.getConvolvedImg0(), ex.getKernel0(), numIts));
 
 		// ImageJFunctions.show(ex.deconvolutionL1TVHuber2D(ex.getConvolvedImgs(),
 		// ex.getKernels(), numIts));

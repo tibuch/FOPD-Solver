@@ -59,9 +59,9 @@ import org.scijava.plugin.Plugin;
 
 /**
  * This {@link Solver} is an implementation of the algorithm proposed by:
- * Chambolle, Antonin, and Thomas Pock.
- * "A first-order primal-dual algorithm for convex problems with applications to imaging."
- * Journal of Mathematical Imaging and Vision 40.1 (2011): 120-145.
+ * Chambolle, Antonin, and Thomas Pock. "A first-order primal-dual algorithm for
+ * convex problems with applications to imaging." Journal of Mathematical
+ * Imaging and Vision 40.1 (2011): 120-145.
  * 
  * @author Tim-Oliver Buchholz, University of Konstanz
  * @param <T>
@@ -112,10 +112,10 @@ public class DefaultSolver<T extends RealType<T>>
 		final RandomAccessibleInterval<T> tmp = (RandomAccessibleInterval<T>) ops.create()
 				.img(input.getIntermediateResult(0));
 		final RandomAccessibleInterval<T> oldResult = (RandomAccessibleInterval<T>) ops.create()
-				.img(input.getIntermediateResult(0)); 
+				.img(input.getIntermediateResult(0));
 
 		double[] statistic = new double[3];
-		
+
 		for (int i = 0; i < numIterations; i++) {
 
 			regularizer.getAscent().calculate(input);
@@ -128,14 +128,24 @@ public class DefaultSolver<T extends RealType<T>>
 
 			// mapperSubtract.compute(2*u, uq, uq) does not work, because wrong
 			// map is chosen later on.
-			mapperSubtract.compute(
-					Converters.convert(input.getIntermediateResult(0), converter, input.getRegularizerDV().getType()),
-					(IterableInterval<T>) input.getResultImage(0), tmp);
+			 mapperSubtract.compute(
+			 Converters.convert(input.getIntermediateResult(0), converter,
+			 input.getRegularizerDV().getType()),
+			 (IterableInterval<T>) input.getResultImage(0), tmp);
+			
+			 clipperMapper.mutate((IterableInterval<T>) tmp);
+			 copyComputer.compute(tmp, input.getResultImage(0));
+			 
+//			mapperSubtract.compute(
+//					Converters.convert(input.getIntermediateResult(0), converter, input.getRegularizerDV().getType()),
+//					(IterableInterval<T>) input.getResultImage(0), input.getResultImage(0));
+//
+//			clipperMapper.mutate((IterableInterval<T>) input.getResultImage(0));
 
-			clipperMapper.mutate((IterableInterval<T>) tmp);
-			copyComputer.compute(tmp, input.getResultImage(0));
-//			statistic = avgDifference.calculate(oldResult, input.getResultImage(0));
-//			System.out.println("Change: min = " + statistic[0] + ", mean = " + statistic[1] + ", max = " + statistic[2] + ";");
+			// statistic = avgDifference.calculate(oldResult,
+			// input.getResultImage(0));
+			// System.out.println("Change: min = " + statistic[0] + ", mean = "
+			// + statistic[1] + ", max = " + statistic[2] + ";");
 			copyComputer.compute(input.getResultImage(0), oldResult);
 		}
 		return input.getResultImage(0);
@@ -161,7 +171,7 @@ public class DefaultSolver<T extends RealType<T>>
 
 		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class, IterableInterval.class, UnaryInplaceOp.class);
 		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops, Default01Clipper.class, type));
-		
+
 		avgDifference = Functions.binary(ops, AveragePerPixelDifference.class, double[].class,
 				RandomAccessibleInterval.class, RandomAccessibleInterval.class);
 	}
