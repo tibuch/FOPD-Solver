@@ -52,7 +52,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.DoubleType;
 
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -135,7 +134,7 @@ public class DefaultSolver<T extends RealType<T>>
 			clipperMapper.mutate((IterableInterval<T>) tmp);
 			copyComputer.compute(tmp, input.getResultImage(0));
 			statistic = avgDifference.calculate(oldResult, input.getResultImage(0));
-			System.out.println("Change: min = " + statistic[0] + ", mean = " + statistic[1] + ", max = " + statistic[2] + ";");
+			System.out.println(statistic[0] + ", " + statistic[1] + ", " + statistic[2] + ";");
 			copyComputer.compute(input.getResultImage(0), oldResult);
 		}
 		return input.getResultImage(0);
