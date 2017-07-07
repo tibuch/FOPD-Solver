@@ -38,7 +38,7 @@ import net.imagej.ops.fopd.DualVariables;
 import net.imagej.ops.fopd.helper.DefaultForwardDifference;
 import net.imagej.ops.fopd.helper.DefaultL1Projector;
 import net.imagej.ops.fopd.helper.DefaultL2Norm;
-import net.imagej.ops.fopd.regularizer.tgv.solver.TGVMinimizer2D;
+import net.imagej.ops.fopd.regularizer.tgv.solver.TGVMinimizer3D;
 import net.imagej.ops.fopd.solver.RegularizerSolver;
 import net.imagej.ops.fopd.solver.SolverState;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndRAIToIIParallel;
@@ -297,6 +297,6 @@ public class TGV3DAscent<T extends RealType<T>> extends
 			DefaultL1Projector.class, input.getType(), input.getType(), alpha));
 
 		tgvSolver = ops.op(RegularizerSolver.class, input.getSubSolverState(0),
-			new TGVMinimizer2D<T>(ops, beta, 1 / 5.0), 1);
+			new TGVMinimizer3D<T>(ops, beta, 1 / 7.0), 1);
 	}
 }

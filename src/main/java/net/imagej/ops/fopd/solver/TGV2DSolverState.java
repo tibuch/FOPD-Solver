@@ -28,54 +28,39 @@
  * #L%
  */
 
-package net.imagej.ops.fopd.energy.deconvolution;
+package net.imagej.ops.fopd.solver;
 
-import net.imagej.ops.fopd.costfunction.CostFunction;
-import net.imagej.ops.fopd.costfunction.squaredl2norm.SquaredL2Norm;
-import net.imagej.ops.fopd.operator.LinearOperator;
-import net.imagej.ops.fopd.regularizer.Regularizer;
-import net.imagej.ops.fopd.regularizer.tgv.TGV2D;
-import net.imagej.ops.fopd.solver.SolverState;
-import net.imagej.ops.fopd.solver.TGV3DSolverState;
-import net.imagej.ops.special.hybrid.UnaryHybridCF;
+import net.imagej.ops.OpService;
+import net.imagej.ops.fopd.regularizer.tgv.solver.TGVMinimizer2DSolverState;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-
 /**
- * A 2D deconvolution algorithm which uses TGV as {@link Regularizer} and takes
- * the L1-Norm as {@link CostFunction}.
+ * Specific implementation of {@link SolverState} for TGVSolver. 
  * 
- * Energy: E(u) = lambda * TGV(u) + |u - f|_1, where u is the deconvolved
- * solution, lambda is the smoothness weight, k is the known kernel, * is the
- * convolution operator and f is the observed image.
- * 
- * @author Tim-Oliver Buchholz, University of Konstanz
+ * @author Tim-Oliver Buchholz, University of Konstanz.
+ * @param <T>
  */
-@Plugin(type = UnaryHybridCF.class)
-public class TGVSquaredL2Deconvolution2D<T extends RealType<T>> extends AbstractDeconvoltuion<T> {
+public class TGV2DSolverState<T extends RealType<T>> extends
+	AbstractSolverState<T>
+{
 
-	@Parameter
-	private double alpha;
+	private TGVMinimizer2DSolverState<T> tgvState;
 
-	@Parameter
-	private double beta;
+	public TGV2DSolverState(final OpService ops,
+		final RandomAccessibleInterval<T>[] images, final int numResults)
+	{
+		super(ops, images, numResults);
 
-	@Override
-	SolverState<T> getSolverState(RandomAccessibleInterval<T>[] input) {
-		return new TGV3DSolverState<T>(ops, input, 1);
+		this.tgvState = new TGVMinimizer2DSolverState<>(ops, images);
 	}
 
 	@Override
-	Regularizer<T> getRegularizer(final double numViews) {
-		return new TGV2D<T>(ops, alpha, beta, (1.0 / (4.0 + numViews)));
-	}
-
-	@Override
-	CostFunction<T> getCostFunction(RandomAccessibleInterval<T>[] input, LinearOperator<T>[] ascentConvolver,
-			LinearOperator<T>[] descentConvolver) {
-		return new SquaredL2Norm<T>(ops, input, ascentConvolver, descentConvolver, (1.0 / (4.0 + input.length)));
+	public SolverState<T> getSubSolverState(int i) {
+		if (i > 0) {
+			throw new ArrayIndexOutOfBoundsException(
+				"This solver only depends on no other sovler.");
+		}
+		return tgvState;
 	}
 }

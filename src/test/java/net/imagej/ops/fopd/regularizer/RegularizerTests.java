@@ -45,7 +45,7 @@ import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber3DAscent;
 import net.imagej.ops.fopd.regularizer.tvhuber.TVHuber3DDescent;
 import net.imagej.ops.fopd.solver.DefaultSolverState;
 import net.imagej.ops.fopd.solver.SolverState;
-import net.imagej.ops.fopd.solver.TGVSolverState;
+import net.imagej.ops.fopd.solver.TGV3DSolverState;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
@@ -235,7 +235,7 @@ public class RegularizerTests extends AbstractOpTest {
 		final TGV2DDescent<DoubleType> descentTVHuber = ops.op(
 			TGV2DDescent.class, SolverState.class, 0.25);
 
-		final SolverState<DoubleType> state = new TGVSolverState<DoubleType>(
+		final SolverState<DoubleType> state = new TGV3DSolverState<DoubleType>(
 			ops, new RandomAccessibleInterval[] { ops.create().img(img2D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img2D.cursor();
@@ -267,7 +267,7 @@ public class RegularizerTests extends AbstractOpTest {
 		final TGV2DDescent<DoubleType> descentTVHuber = ops.op(
 			TGV2DDescent.class, SolverState.class, 0.25);
 
-		final SolverState<DoubleType> state = new TGVSolverState<DoubleType>(
+		final SolverState<DoubleType> state = new TGV3DSolverState<DoubleType>(
 			ops, new RandomAccessibleInterval[] { ops.create().img(img3D) }, 1);
 		RandomAccess<DoubleType> ra = state.getResultImage(0).randomAccess();
 		Cursor<DoubleType> c = img3D.cursor();

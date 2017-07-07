@@ -32,7 +32,7 @@ package net.imagej.ops.fopd.regularizer.tgv.solver;
 
 import net.imagej.ops.OpService;
 import net.imagej.ops.fopd.regularizer.AbstractRegularizer;
-import net.imagej.ops.fopd.solver.SolverState;
+import net.imagej.ops.fopd.solver.TGV2DSolverState;
 import net.imglib2.type.numeric.RealType;
 
 /**
@@ -49,7 +49,7 @@ public class TGVMinimizer2D<T extends RealType<T>> extends AbstractRegularizer<T
 
 	@SuppressWarnings("unchecked")
 	public TGVMinimizer2D(final OpService ops, final double beta, final double descentStepSize) {
-		this.ascent = ops.op(TGVMinimizer2DAscent.class, SolverState.class, beta);
-		this.descent = ops.op(TGVMinimizer2DDescent.class, SolverState.class, descentStepSize);
+		this.ascent = ops.op(TGVMinimizer2DAscent.class, TGV2DSolverState.class, beta);
+		this.descent = ops.op(TGVMinimizer2DDescent.class, TGV2DSolverState.class, descentStepSize);
 	}
 }

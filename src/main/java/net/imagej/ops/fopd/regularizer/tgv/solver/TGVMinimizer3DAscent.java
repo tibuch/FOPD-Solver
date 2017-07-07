@@ -67,10 +67,8 @@ import org.scijava.plugin.Plugin;
  * @param <T>
  */
 @Plugin(type = Ascent.class)
-public class TGVMinimizer3DAscent<T extends RealType<T>> extends
-	AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>> implements
-	Ascent<T>
-{
+public class TGVMinimizer3DAscent<T extends RealType<T>> extends AbstractUnaryFunctionOp<SolverState<T>, SolverState<T>>
+		implements Ascent<T> {
 
 	/**
 	 * The OpService.
@@ -98,7 +96,7 @@ public class TGVMinimizer3DAscent<T extends RealType<T>> extends
 	 * Holds the gradient of the first image in y-direction.
 	 */
 	private RandomAccessibleInterval<T> g1yTGV;
-	
+
 	/**
 	 * Holds the gradient of the first image in z-direction.
 	 */
@@ -185,114 +183,80 @@ public class TGVMinimizer3DAscent<T extends RealType<T>> extends
 
 	@SuppressWarnings("unchecked")
 	public SolverState<T> calculate(SolverState<T> input) {
-		final DualVariables<T> dualVariables = input.getSubSolverState(0)
-			.getRegularizerDV();
+		final DualVariables<T> dualVariables = input.getSubSolverState(0).getRegularizerDV();
 
-		if (gradientX == null || gradientY == null || mapperAdd == null ||
-			normComputer == null || norm == null || inplaceMapper == null)
-		{
+		if (gradientX == null || gradientY == null || mapperAdd == null || normComputer == null || norm == null
+				|| inplaceMapper == null) {
 			init(input.getRegularizerDV());
 		}
 
-		g1xTGV = gradientX.calculate(input.getSubSolverState(0).getResultImage(
-			0));
-		g1yTGV = gradientY.calculate(input.getSubSolverState(0).getResultImage(
-			0));
-		g1zTGV = gradientZ.calculate(input.getSubSolverState(0).getResultImage(
-			0));
+		g1xTGV = gradientX.calculate(input.getSubSolverState(0).getResultImage(0));
+		g1yTGV = gradientY.calculate(input.getSubSolverState(0).getResultImage(0));
+		g1zTGV = gradientZ.calculate(input.getSubSolverState(0).getResultImage(0));
 
-		g2xTGV = gradientX.calculate(input.getSubSolverState(0).getResultImage(
-			1));
-		g2yTGV = gradientY.calculate(input.getSubSolverState(0).getResultImage(
-			1));
-		g2zTGV = gradientZ.calculate(input.getSubSolverState(0).getResultImage(
-			1));
-		
-		g3xTGV = gradientX.calculate(input.getSubSolverState(0).getResultImage(
-			2));
-		g3yTGV = gradientY.calculate(input.getSubSolverState(0).getResultImage(
-			2));
-		g3zTGV = gradientZ.calculate(input.getSubSolverState(0).getResultImage(
-			2));
+		g2xTGV = gradientX.calculate(input.getSubSolverState(0).getResultImage(1));
+		g2yTGV = gradientY.calculate(input.getSubSolverState(0).getResultImage(1));
+		g2zTGV = gradientZ.calculate(input.getSubSolverState(0).getResultImage(1));
 
-		mapperAdd.compute(dualVariables.getDualVariable(0), Converters.convert(
-			g1xTGV, c1, input.getType()), (IterableInterval<T>) dualVariables
-				.getDualVariable(0));
+		g3xTGV = gradientX.calculate(input.getSubSolverState(0).getResultImage(2));
+		g3yTGV = gradientY.calculate(input.getSubSolverState(0).getResultImage(2));
+		g3zTGV = gradientZ.calculate(input.getSubSolverState(0).getResultImage(2));
 
-		mapperAdd.compute(dualVariables.getDualVariable(1), Converters.convert(
-			g1yTGV, c2, input.getType()), (IterableInterval<T>) dualVariables
-				.getDualVariable(1));
-		mapperAdd.compute(dualVariables.getDualVariable(1), Converters.convert(
-			g2xTGV, c2, input.getType()), (IterableInterval<T>) dualVariables
-				.getDualVariable(1));
-		
-		mapperAdd.compute(dualVariables.getDualVariable(2), Converters.convert(
-				g1zTGV, c2, input.getType()), (IterableInterval<T>) dualVariables
-					.getDualVariable(2));
-			mapperAdd.compute(dualVariables.getDualVariable(2), Converters.convert(
-				g3xTGV, c2, input.getType()), (IterableInterval<T>) dualVariables
-					.getDualVariable(2));
-		
-		mapperAdd.compute(dualVariables.getDualVariable(3), Converters.convert(
-			g2yTGV, c1, input.getType()), (IterableInterval<T>) dualVariables
-				.getDualVariable(3));
-		
-		mapperAdd.compute(dualVariables.getDualVariable(4), Converters.convert(
-				g2zTGV, c2, input.getType()), (IterableInterval<T>) dualVariables
-					.getDualVariable(4));
-			mapperAdd.compute(dualVariables.getDualVariable(4), Converters.convert(
-				g3yTGV, c2, input.getType()), (IterableInterval<T>) dualVariables
-					.getDualVariable(4));
-			
-			mapperAdd.compute(dualVariables.getDualVariable(5), Converters.convert(
-					g3zTGV, c1, input.getType()), (IterableInterval<T>) dualVariables
-						.getDualVariable(5));
+		mapperAdd.compute(dualVariables.getDualVariable(0), Converters.convert(g1xTGV, c1, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(0));
 
-		normComputer.compute(new RandomAccessibleInterval[] { 
-				dualVariables.getDualVariable(0), 
-				dualVariables.getDualVariable(1), 
-				dualVariables.getDualVariable(2), 
-				dualVariables.getDualVariable(1), 
-				dualVariables.getDualVariable(3),
-				dualVariables.getDualVariable(4),
-				dualVariables.getDualVariable(2),
-				dualVariables.getDualVariable(4),
-				dualVariables.getDualVariable(5)}, norm);
+		mapperAdd.compute(dualVariables.getDualVariable(1), Converters.convert(g1yTGV, c2, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(1));
+		mapperAdd.compute(dualVariables.getDualVariable(1), Converters.convert(g2xTGV, c2, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(1));
 
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
-			.getDualVariable(0), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
-			.getDualVariable(1), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
-			.getDualVariable(2), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
-			.getDualVariable(3), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
-			.getDualVariable(4), (IterableInterval<T>) norm);
-		inplaceMapper.mutate1((IterableInterval<T>) dualVariables
-			.getDualVariable(5), (IterableInterval<T>) norm);
+		mapperAdd.compute(dualVariables.getDualVariable(2), Converters.convert(g1zTGV, c2, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(2));
+		mapperAdd.compute(dualVariables.getDualVariable(2), Converters.convert(g3xTGV, c2, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(2));
+
+		mapperAdd.compute(dualVariables.getDualVariable(3), Converters.convert(g2yTGV, c1, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(3));
+
+		mapperAdd.compute(dualVariables.getDualVariable(4), Converters.convert(g2zTGV, c2, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(4));
+		mapperAdd.compute(dualVariables.getDualVariable(4), Converters.convert(g3yTGV, c2, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(4));
+
+		mapperAdd.compute(dualVariables.getDualVariable(5), Converters.convert(g3zTGV, c1, input.getType()),
+				(IterableInterval<T>) dualVariables.getDualVariable(5));
+
+		normComputer.compute(new RandomAccessibleInterval[] { dualVariables.getDualVariable(0),
+				dualVariables.getDualVariable(1), dualVariables.getDualVariable(2), dualVariables.getDualVariable(1),
+				dualVariables.getDualVariable(3), dualVariables.getDualVariable(4), dualVariables.getDualVariable(2),
+				dualVariables.getDualVariable(4), dualVariables.getDualVariable(5) }, norm);
+
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(0), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(1), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(2), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(3), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(4), (IterableInterval<T>) norm);
+		inplaceMapper.mutate1((IterableInterval<T>) dualVariables.getDualVariable(5), (IterableInterval<T>) norm);
 
 		return input;
 	}
 
 	@SuppressWarnings("unchecked")
 	private void init(final DualVariables<T> input) {
-		norm = (RandomAccessibleInterval<T>) ops.create().img(input
-			.getDualVariable(0));
-		g1xTGV = (RandomAccessibleInterval<T>) ops.create().img(input
-			.getDualVariable(0));
-		g1yTGV = (RandomAccessibleInterval<T>) ops.create().img(input
-			.getDualVariable(0));
-		g2xTGV = (RandomAccessibleInterval<T>) ops.create().img(input
-			.getDualVariable(0));
-		g2yTGV = (RandomAccessibleInterval<T>) ops.create().img(input
-			.getDualVariable(0));
-		gradientX = Functions.unary(ops, DefaultForwardDifference.class,
-			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 0,
-			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
-		gradientY = Functions.unary(ops, DefaultForwardDifference.class,
-			RandomAccessibleInterval.class, RandomAccessibleInterval.class, 1,
-			new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		norm = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
+		g1xTGV = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
+		g1yTGV = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
+		g2xTGV = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
+		g2yTGV = (RandomAccessibleInterval<T>) ops.create().img(input.getDualVariable(0));
+		gradientX = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval.class, 0,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		gradientY = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval.class, 1,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
+		gradientZ = Functions.unary(ops, DefaultForwardDifference.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval.class, 2,
+				new OutOfBoundsBorderFactory<DoubleType, RandomAccessibleInterval<DoubleType>>());
 
 		c1 = new Converter<T, T>() {
 
@@ -308,24 +272,20 @@ public class TGVMinimizer3DAscent<T extends RealType<T>> extends
 			}
 		};
 
-		final BinaryComputerOp<T, T, T> addComputer = Computers.binary(ops,
-			Ops.Math.Add.class, input.getType(), input.getType(), input
-				.getType());
+		final BinaryComputerOp<T, T, T> addComputer = Computers.binary(ops, Ops.Math.Add.class, input.getType(),
+				input.getType(), input.getType());
 
-		mapperAdd = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class,
-			IterableInterval.class, RandomAccessibleInterval.class,
-			RandomAccessibleInterval.class, BinaryComputerOp.class);
+		mapperAdd = (RAIAndRAIToIIParallel<T, T, T>) ops.op(Map.class, IterableInterval.class,
+				RandomAccessibleInterval.class, RandomAccessibleInterval.class, BinaryComputerOp.class);
 		mapperAdd.setOp(addComputer);
 
-		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class,
-			IterableInterval.class, IterableInterval.class,
-			BinaryInplace1Op.class);
+		inplaceMapper = (IIAndIIParallel<T, T>) ops.op(Map.class, IterableInterval.class, IterableInterval.class,
+				BinaryInplace1Op.class);
 
-		normComputer = Computers.unary(ops, DefaultL2Norm.class,
-			RandomAccessibleInterval.class, RandomAccessibleInterval[].class);
-		final BinaryInplace1Op<? super T, T, T> projector = Inplaces.binary1(
-			ops, DefaultL1Projector.class, input.getType(), input.getType(),
-			beta);
+		normComputer = Computers.unary(ops, DefaultL2Norm.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval[].class);
+		final BinaryInplace1Op<? super T, T, T> projector = Inplaces.binary1(ops, DefaultL1Projector.class,
+				input.getType(), input.getType(), beta);
 		inplaceMapper.setOp((BinaryInplace1Op<T, T, T>) projector);
 
 	}

@@ -39,7 +39,7 @@ import net.imagej.ops.fopd.operator.LinearOperator;
 import net.imagej.ops.fopd.regularizer.Regularizer;
 import net.imagej.ops.fopd.regularizer.tgv.TGV3D;
 import net.imagej.ops.fopd.solver.SolverState;
-import net.imagej.ops.fopd.solver.TGVSolverState;
+import net.imagej.ops.fopd.solver.TGV3DSolverState;
 import net.imagej.ops.special.hybrid.UnaryHybridCF;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -65,7 +65,7 @@ public class TGVL1Deconvolution3D<T extends RealType<T>> extends AbstractDeconvo
 
 	@Override
 	SolverState<T> getSolverState(RandomAccessibleInterval<T>[] input) {
-		return new TGVSolverState<T>(ops, input, 1);
+		return new TGV3DSolverState<T>(ops, input, 1);
 	}
 
 	@Override

@@ -56,7 +56,7 @@ public class TGVMinimizer3DSolverState<T extends RealType<T>> extends
 
 	@Override
 	public RandomAccessibleInterval<T> getIntermediateResult(int i) {
-		if (i > 1) {
+		if (i > 2) {
 			throw new ArrayIndexOutOfBoundsException(
 				"This solver only has two intermediate results.");
 		}
@@ -65,7 +65,7 @@ public class TGVMinimizer3DSolverState<T extends RealType<T>> extends
 
 	@Override
 	public RandomAccessibleInterval<T> getResultImage(int i) {
-		if (i > 1) {
+		if (i > 2) {
 			throw new ArrayIndexOutOfBoundsException(
 				"This solver only has two results.");
 		}
