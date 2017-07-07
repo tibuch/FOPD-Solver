@@ -57,7 +57,7 @@ import org.scijava.plugin.Parameter;
  * @param <T>
  */
 public abstract class AbstractDeconvoltuion<T extends RealType<T>> extends
-	AbstractBinaryFunctionOp<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>>
+	AbstractBinaryFunctionOp<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>> implements Benchmark<T>
 {
 
 	@Parameter
@@ -65,6 +65,8 @@ public abstract class AbstractDeconvoltuion<T extends RealType<T>> extends
 
 	@Parameter
 	protected OpService ops;
+
+	private int numIterationsBenchmark;
 
 	public AbstractDeconvoltuion() {
 		super();
@@ -106,6 +108,7 @@ public abstract class AbstractDeconvoltuion<T extends RealType<T>> extends
 
 		final DefaultSolver<T> solver = ops.op(DefaultSolver.class, state, tgv,
 			cf, numIt);
+		solver.setNumIterations(getNumIterations());
 		solver.calculate(state);
 
 		return state.getResultImage(0);
@@ -121,4 +124,13 @@ public abstract class AbstractDeconvoltuion<T extends RealType<T>> extends
 		final LinearOperator<T>[] ascentOperator,
 		final LinearOperator<T>[] descentOperator);
 
+	@Override
+	public int getNumIterations() {
+		return numIterationsBenchmark;
+	}
+	
+	@Override
+	public void setNumIterations(int numIt) {
+		this.numIterationsBenchmark = numIt;
+	}
 }

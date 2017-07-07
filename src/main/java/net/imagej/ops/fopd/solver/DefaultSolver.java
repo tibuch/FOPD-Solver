@@ -98,7 +98,8 @@ public class DefaultSolver<T extends RealType<T>>
 
 	private Converter<T, T> converter;
 
-	private BinaryFunctionOp<RandomAccessibleInterval, RandomAccessibleInterval, double[]> avgDifference;
+	private int benchmarkNumIt;
+
 
 	@SuppressWarnings("unchecked")
 	public RandomAccessibleInterval<T> calculate(SolverState<T> input) {
@@ -113,9 +114,8 @@ public class DefaultSolver<T extends RealType<T>>
 		final RandomAccessibleInterval<T> oldResult = (RandomAccessibleInterval<T>) ops.create()
 				.img(input.getIntermediateResult(0)); 
 
-		double[] statistic = new double[3];
 		
-		for (int i = 0; i < numIterations; i++) {
+		for (int i = 0; i < getNumIterations(); i++) {
 
 			regularizer.getAscent().calculate(input);
 			costfunction.getAscent().calculate(input);
@@ -133,8 +133,6 @@ public class DefaultSolver<T extends RealType<T>>
 
 			clipperMapper.mutate((IterableInterval<T>) tmp);
 			copyComputer.compute(tmp, input.getResultImage(0));
-			statistic = avgDifference.calculate(oldResult, input.getResultImage(0));
-			System.out.println(statistic[0] + ", " + statistic[1] + ", " + statistic[2] + ";");
 			copyComputer.compute(input.getResultImage(0), oldResult);
 		}
 		return input.getResultImage(0);
@@ -161,7 +159,13 @@ public class DefaultSolver<T extends RealType<T>>
 		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class, IterableInterval.class, UnaryInplaceOp.class);
 		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops, Default01Clipper.class, type));
 		
-		avgDifference = Functions.binary(ops, AveragePerPixelDifference.class, double[].class,
-				RandomAccessibleInterval.class, RandomAccessibleInterval.class);
+	}
+	
+	public void setNumIterations(final int numIt) {
+		this.benchmarkNumIt = numIt;
+	}
+	
+	private int getNumIterations() {
+		return this.benchmarkNumIt;
 	}
 }

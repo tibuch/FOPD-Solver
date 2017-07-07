@@ -33,7 +33,7 @@ import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
 import net.imagej.ops.Ops;
 import net.imagej.ops.Ops.Map;
-import net.imagej.ops.fopd.helper.AveragePerPixelDifference;
+import net.imagej.ops.fopd.energy.deconvolution.Benchmark;
 import net.imagej.ops.fopd.helper.Default01Clipper;
 import net.imagej.ops.fopd.operator.FastConvolver;
 import net.imagej.ops.map.MapBinaryComputers.RAIAndIIToRAIParallel;
@@ -42,8 +42,6 @@ import net.imagej.ops.special.computer.BinaryComputerOp;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.computer.UnaryComputerOp;
 import net.imagej.ops.special.function.AbstractBinaryFunctionOp;
-import net.imagej.ops.special.function.BinaryFunctionOp;
-import net.imagej.ops.special.function.Functions;
 import net.imagej.ops.special.inplace.Inplaces;
 import net.imagej.ops.special.inplace.UnaryInplaceOp;
 import net.imglib2.Cursor;
@@ -69,8 +67,9 @@ import org.scijava.plugin.Plugin;
  *
  */
 @Plugin(type = Op.class)
-public class MultiViewRLDeconvolution<T extends RealType<T>>
-		extends AbstractBinaryFunctionOp<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>[], Img<T>> {
+public class MultiViewRLDeconvolution<T extends RealType<T>> extends
+		AbstractBinaryFunctionOp<RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>[], RandomAccessibleInterval<T>>
+		implements Benchmark<T> {
 
 	@Parameter
 	private int numIts;
@@ -103,15 +102,11 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 
 	private UnaryComputerOp<RandomAccessibleInterval<T>, RandomAccessibleInterval<T>> copyComputer;
 
-	private BinaryFunctionOp<RandomAccessibleInterval, RandomAccessibleInterval, double[]> avgDifference;
-
 	private MapIIInplaceParallel<T> clipperMapper;
 
 	private Img<T> zero;
 
-	private RAIAndIIToRAIParallel<T, T, T> mapperSub;
-
-	private Converter<T, T> avgConverter;
+	private int benchmarkNumIt;
 
 	@SuppressWarnings("unchecked")
 	public Img<T> calculate(final RandomAccessibleInterval<T>[] input, final RandomAccessibleInterval<T>[] kernel) {
@@ -119,7 +114,7 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 		init(input, kernel);
 		double[] statistic = new double[3];
 
-		for (int i = 0; i < numIts; i++) {
+		for (int i = 0; i < benchmarkNumIt; i++) {
 			copyComputer.compute(u, oldU);
 			for (int j = 0; j < input.length; j++) {
 				mapperDivide.compute(input[j], (IterableInterval<T>) conv[j].calculate(u), tmp);
@@ -128,8 +123,6 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 				mapperAdd.compute(Converters.convert(tmp, avgConverter, tmp.randomAccess().get()), u, tmp);
 				copyComputer.compute(tmp, u);
 			}
-			statistic = avgDifference.calculate(u, oldU);
-			System.out.println(statistic[0] + ", " + statistic[1] + ", " + statistic[2] + ";");
 		}
 
 		return u;
@@ -221,10 +214,17 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 
 		copyComputer = Computers.unary(ops, Ops.Copy.RAI.class, input[0], input[0]);
 
-		avgDifference = Functions.binary(ops, AveragePerPixelDifference.class, double[].class,
-				RandomAccessibleInterval.class, RandomAccessibleInterval.class);
-
 		clipperMapper = (MapIIInplaceParallel<T>) ops.op(Map.class, IterableInterval.class, UnaryInplaceOp.class);
 		clipperMapper.setOp((UnaryInplaceOp<T, T>) Inplaces.unary(ops, Default01Clipper.class, type));
+	}
+
+	@Override
+	public void setNumIterations(int numIt) {
+		this.benchmarkNumIt = numIt;
+	}
+
+	@Override
+	public int getNumIterations() {
+		return this.benchmarkNumIt;
 	}
 }
