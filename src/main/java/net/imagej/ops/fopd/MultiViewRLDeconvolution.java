@@ -109,6 +109,10 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 
 	private Img<T> zero;
 
+	private RAIAndIIToRAIParallel<T, T, T> mapperSub;
+
+	private Converter<T, T> avgConverter;
+
 	@SuppressWarnings("unchecked")
 	public Img<T> calculate(final RandomAccessibleInterval<T>[] input, final RandomAccessibleInterval<T>[] kernel) {
 
@@ -120,8 +124,9 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 			for (int j = 0; j < input.length; j++) {
 				mapperDivide.compute(input[j], (IterableInterval<T>) conv[j].calculate(u), tmp);
 				mapperMul.compute(u, (IterableInterval<T>) convFlipped[j].calculate(tmp), tmp);
-				mapperAdd.compute(Converters.convert(tmp, converter, tmp.randomAccess().get()), zero, u);
-				clipperMapper.mutate(u);
+				mapperSub.compute(Converters.convert(tmp, converter, tmp.randomAccess().get()), u, tmp);
+				mapperAdd.compute(Converters.convert(tmp, avgConverter, tmp.randomAccess().get()), u, tmp);
+				copyComputer.compute(tmp, u);
 			}
 			statistic = avgDifference.calculate(u, oldU);
 			System.out.println(statistic[0] + ", " + statistic[1] + ", " + statistic[2] + ";");
@@ -179,6 +184,10 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 		mapperAdd = (RAIAndIIToRAIParallel<T, T, T>) ops.op(Map.class, RandomAccessibleInterval.class,
 				RandomAccessibleInterval.class, IterableInterval.class, BinaryComputerOp.class);
 		mapperAdd.setOp(Computers.binary(ops, Ops.Math.Add.class, type, type, type));
+		
+		mapperSub = (RAIAndIIToRAIParallel<T, T, T>) ops.op(Map.class, RandomAccessibleInterval.class,
+				RandomAccessibleInterval.class, IterableInterval.class, BinaryComputerOp.class);
+		mapperSub.setOp(Computers.binary(ops, Ops.Math.Subtract.class, type, type, type));
 
 		converter = new Converter<T, T>() {
 
@@ -186,11 +195,27 @@ public class MultiViewRLDeconvolution<T extends RealType<T>>
 			@Override
 			public void convert(T input, T output) {
 				double val = input.getRealDouble();
+				double nextValue = 0.0001;
 				if (val > 0) {
-					output.setReal(((Math.sqrt(1 + 2.0 * lambda * val) - 1.0) / lambda));
-				} else {
-					output.setReal(0.0001);
-				}
+					nextValue = (Math.sqrt(1 + 2.0 * lambda * val) - 1.0) / lambda;
+				} 
+				if (Double.isNaN(nextValue))
+					nextValue = 0.0001;
+				else
+					nextValue = Math.max(0.0001, nextValue);
+				
+				output.setReal(nextValue);
+				
+			}
+		};
+		
+		avgConverter = new Converter<T, T>() {
+
+			@SuppressWarnings("hiding")
+			@Override
+			public void convert(T in, T out) {
+				out.setReal(in.getRealDouble() * (1/(double)input.length));
+				
 			}
 		};
 
