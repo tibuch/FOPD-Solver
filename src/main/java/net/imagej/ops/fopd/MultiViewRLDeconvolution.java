@@ -108,11 +108,15 @@ public class MultiViewRLDeconvolution<T extends RealType<T>> extends
 
 	private int benchmarkNumIt;
 
+	private RAIAndIIToRAIParallel<T, T, T> mapperSub;
+
+	private Converter<T, T> avgConverter;
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public Img<T> calculate(final RandomAccessibleInterval<T>[] input, final RandomAccessibleInterval<T>[] kernel) {
 
 		init(input, kernel);
-		double[] statistic = new double[3];
 
 		for (int i = 0; i < benchmarkNumIt; i++) {
 			copyComputer.compute(u, oldU);
@@ -204,7 +208,6 @@ public class MultiViewRLDeconvolution<T extends RealType<T>> extends
 		
 		avgConverter = new Converter<T, T>() {
 
-			@SuppressWarnings("hiding")
 			@Override
 			public void convert(T in, T out) {
 				out.setReal(in.getRealDouble() * (1/(double)input.length));
